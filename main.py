@@ -8,6 +8,7 @@ import tkinter as tk # Cross-platform module for GUI
 import subprocess # Module for running shell commands
 
 # Check if a camera is connected
+"""
 while not is_camera_connected():
     print("No camera is connected.")
     time.sleep(2)  # Simulating delay before checking again
@@ -22,7 +23,7 @@ camera_info = get_camera_info()  # Get the information of the connected camera
 camera = {
     "model": camera_info
 }
-
+"""
 cameras = []  # Define the "cameras" variable as an empty list
 
 save_directory = choose_save_directory() # Choose the save directory
