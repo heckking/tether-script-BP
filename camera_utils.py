@@ -33,6 +33,16 @@ def list_available_cameras(): # List the available cameras
     except subprocess.CalledProcessError:
         return []
 
+def list_supported_cameras(): # List the supported cameras
+    """
+    Lists the supported cameras by running the 'gphoto2 --list-cameras' command.
+    Returns a list of supported cameras if successful, otherwise returns an empty list.
+    """
+    try:
+        return subprocess.check_output(['gphoto2', '--list-cameras']).decode().split('\n')[1:-1]
+    except subprocess.CalledProcessError:
+        return []
+
 def get_connected_camera_model(): # Get the model of the connected camera
     """
     Gets the model of the connected camera by running the 'gphoto2 --auto-detect' command.
@@ -70,6 +80,14 @@ def get_camera_info(): # Get the camera information
         return output
     except subprocess.CalledProcessError:
         return None
+
+def show_camera_info(camera): # Show the camera information
+                        print("Model:", camera["model"])
+                        print("Serial Number:", camera["serial_number"])
+                        print("Firmware Version:", camera["firmware_version"])
+                        print("Battery Level:", camera["battery_level"])
+                        print("Storage Capacity:", camera["storage_capacity"])
+                        print("Remaining Storage:", camera["remaining_storage"])
 
 def list_available_usb_ports(): # List the available USB ports
     """

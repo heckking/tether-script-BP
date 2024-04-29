@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 import subprocess
-from camera_utils import is_camera_connected, list_available_cameras, get_connected_camera_model, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera
+from camera_utils import is_camera_connected, list_available_cameras, get_connected_camera_model, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera, show_camera_info
 import time
-import tkinter as tk
+import tkinter as tk # Cross-platform module for GUI
 from app_utils import choose_save_directory, calculate_mb_left
+import msvcrt   # Windows-specific module for keyboard input
+import keyboard # Cross-platform module for keyboard input
 
 # Check if a camera is connected
 while not is_camera_connected():
@@ -90,7 +92,7 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
         print("1. Capture")
         print("2. Save Folder settings")
         print("3. Transfer all captured pictures in this session") 
-        print("4. Camera info")
+        print("4. Camera and system info")
         print("5. Start new session")
         print("6. Reconnet camera")
         print("7. Disconnect camera")
@@ -177,22 +179,49 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
 
         elif choice == "4": # Camera info
             print("1. My Camera info")
-            print("2. All Supported Cameras")
-            print("3. Go back")
+            print("2. All connected cameras")
+            print("3. All supported cameras")
+            print("4. All available USB ports")
+            print("5. Go back")
             
-            choice = input("Enter your choice (1-3): ")
+            choice = input("Enter your choice (1-5): ")
             while True:
-                if choice == "1":
-                    print("Camera info:", camera["model"])
-                elif choice == "2":
-                    print("All Supported Cameras:")
+                if choice == "1": # My Camera info
+                    print("Camera Information:")
+                    show_camera_info(camera) # Show the camera information
+                    print("Press any key to continue...")
+                    keyboard.read_key()
+                    msvcrt.getch()
+                        
+                elif choice == "2": # All connected cameras
+                    print("All Connected Cameras:")
                     for camera in cameras:
                         print(camera)
+                    print("Press any key to continue...")
+                    keyboard.read_key()
+                    msvcrt.getch()
+                    
                 elif choice == "3":
+                    print("All Supported Cameras:")
+                    supported_cameras = list_available_cameras()
+                    for camera in supported_cameras:
+                        print(camera)
+                    keyboard.read_key()
+                    msvcrt.getch()
+                    
+                elif choice == "4":
+                    print("All Available USB Ports:")
+                    usb_ports = list_available_usb_ports()
+                    for port in usb_ports:
+                        print(port)
+                    keyboard.read_key()
+                    msvcrt.getch()
+                    
+                elif choice == "5":
                     break
                 else:
                     print("Invalid choice. Please try again.")
-                choice = input("Enter your choice (1-3): ")
+                choice = input("Enter your choice (1-5): ")
                 
         elif choice == "5": # Start new session
             confirm = input("Are you sure you want to start a new session? (y/n): ")
