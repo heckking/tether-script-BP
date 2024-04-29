@@ -35,9 +35,23 @@ if not save_directory:
 else:
     print("Save directory already chosen:", save_directory)
 
-for camera in cameras:
-    print(camera)
+    if cameras:
+        for camera in cameras:
+            print(camera)
+    else:
+        print("No camera available.")
     
+    class FakeCamera:
+        def __init__(self, model):
+            self.model = model
+
+    # Create a fake camera object for testing
+    fake_camera = FakeCamera("Nikon D750")
+    camera = {
+        "model": fake_camera.model
+    }
+
+    filename = ""
     """Menu layout prototype.
     
     Menu:
@@ -115,7 +129,7 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
                     print("Save Folder:", save_directory, "(", calculate_mb_left(save_directory), "MB left)")
                     time.sleep(2)  # Simulating delay before capturing picture
                     print("Starting capturing picture...")
-                    show_latest_picture(save_directory)
+                    show_latest_picture(save_directory, filename)
                     
                 elif choice == "2": # Change the save folder
                     choice = input("Do you want to change the save folder? (y/n): ")
@@ -141,10 +155,15 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
             print("4. Go back")
             
             while True:
+                print("1. Open save folder")
+                print("2. Change save folder")
+                print("3. Change filename")
+                print("4. Go back")
                 choice = input("Enter your choice (1-4): ")
                 
                 if choice == "1": # Open save folder
-                    subprocess.Popen(["explorer", save_directory])
+                    #subprocess.Popen(["explorer", save_directory])
+                    subprocess.Popen(["nautilus", save_directory])
                 elif choice == "2": # Choose save folder
                     save_directory = choose_save_directory()
                     print("Save directory:", save_directory)
