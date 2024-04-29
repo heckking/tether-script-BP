@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 import subprocess
-from camera_utils import is_camera_connected, list_available_cameras, get_connected_camera_model, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture
+from camera_utils import is_camera_connected, list_available_cameras, get_connected_camera_model, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures
 import time
 import tkinter as tk
-from app_utils import choose_save_directory, calculate_mb_left
+from app_utils import choose_save_directory, calculate_mb_left, choose_destination_directory
 
 # Check if a camera is connected
 while not is_camera_connected():
@@ -58,7 +58,7 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
 	4. Camera info
 		4.1. My Camera info
 		4.2. All Supported Cameras
-		4.3 Go Back
+		4.3  Go Back
   
     5. Start new session
     
@@ -89,7 +89,7 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
 
         print("1. Capture")
         print("2. Save Folder settings")
-        print("3. Transfer all captured pictures in this session")  # Added option to list available USB ports
+        print("3. Transfer all captured pictures in this session") 
         print("4. Camera info")
         print("5. Start new session")
         print("6. Reconnet camera")
@@ -149,14 +149,42 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
             else:
                 print("Invalid choice. Please try again.")
         
-        elif choice == "3":
-            usb_ports = list_available_usb_ports()  # Function to list available USB ports
-            print("Available USB ports:")
-            for port in usb_ports:
-                print(port)
+        elif choice == "3": # Transfer all captured pictures in this session
+                destination_directory = choose_destination_directory()  # Choose the destination directory
+                print("Destination directory:", destination_directory)
+                if not destination_directory:
+                    print("No destination directory chosen. Please choose a destination directory.")
+                    destination_directory = choose_destination_directory()
+                    print("Destination directory:", destination_directory)
+                else:
+                    print("Destination directory already chosen:", destination_directory)
+                
+                # Copy captured pictures to the destination directory
+                print("Copying captured pictures to the destination directory...")
+                
+                copy_captured_pictures(save_directory, destination_directory)
+                print("Pictures copied successfully.")
+                time.wait(4)  # Simulating delay before going back to the main menu
+                # Go back to the main menu
+                break
+
         elif choice == "4":
-            # Add your code for option 4 here
-            pass
+            print("1. My Camera info")
+            print("2. All Supported Cameras")
+            print("3. Go back")
+            
+            choice = input("Enter your choice (1-3): ")
+            if choice == "1":
+                print("Camera info:", camera["model"])
+            elif choice == "2":
+                print("All Supported Cameras:")
+                for camera in cameras:
+                    print(camera)
+            elif choice == "3":
+                break
+            else:
+                print("Invalid choice. Please try again.")
+                
         elif choice == "5":
             # Add your code for option 5 here
             pass

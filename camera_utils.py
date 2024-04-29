@@ -4,6 +4,7 @@ import subprocess
 import os
 import time
 import cv2
+import shutil
 
 def is_camera_connected(): # Check if a camera is connected
     """
@@ -105,7 +106,7 @@ def capture_and_save_picture(save_directory, filename): # Capture and save a pic
             else:
                 print("Failed to capture and save the picture.")
         
-def show_latest_picture(save_directory, filename): # Show the latest picture taken
+def show_latest_picture(save_directory, filename): # Show the latest picture taken in window
     """
     Shows the latest taken picture continuously with the given save directory.
     It accepts all photo file types.
@@ -160,7 +161,38 @@ def show_latest_picture(save_directory, filename): # Show the latest picture tak
     else:
         print("No photos found in the specified directory.")
 
+def copy_captured_pictures(session_directory, destination_directory):
+    """
+    Copies all captured pictures in the session directory to the desired destination directory.
+    """
+    # Check if the session directory exists
+    if not os.path.exists(session_directory):
+        print("Session directory does not exist.")
+        return
 
+    # Check if the destination directory exists
+    if not os.path.exists(destination_directory):
+        print("Destination directory does not exist.")
+        return
+
+    # Get the list of files in the session directory
+    file_list = os.listdir(session_directory)
+
+    # Filter the file list to only include photo files
+    photo_file_list = [file for file in file_list if file.endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png'))]
+
+    # Copy each photo file to the destination directory
+    for photo_file in photo_file_list:
+        source_path = os.path.join(session_directory, photo_file)
+        destination_path = os.path.join(destination_directory, photo_file)
+        try:
+            shutil.copy2(source_path, destination_path)
+            print(f"Successfully copied {photo_file} to {destination_directory}.")
+        except shutil.Error as e:
+            print(f"Failed to copy {photo_file}: {e}")
+        except IOError as e:
+            print(f"Failed to copy {photo_file}: {e}")
+            
 #TO DO list
 # continuous photo viewer add some kind of exit option xxx
 # add single photo viewer
