@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-import subprocess
+import subprocess # Module for running shell commands
 from camera_utils import is_camera_connected, list_available_cameras, get_connected_camera_model, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera, show_camera_info
-import time
+import time # Module for time-related functions
 import tkinter as tk # Cross-platform module for GUI
 from app_utils import choose_save_directory, calculate_mb_left
 import msvcrt   # Windows-specific module for keyboard input
@@ -72,7 +72,7 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
 
     """
 
-    while True:
+    while True: # Main menu loop
         if not is_camera_connected():
             print("Camera is disconnected.")
             print("Please connect the camera.")

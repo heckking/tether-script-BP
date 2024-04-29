@@ -1,7 +1,5 @@
 import subprocess
 import os
-import subprocess
-import os
 import time
 import cv2
 import shutil
