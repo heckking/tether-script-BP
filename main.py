@@ -3,7 +3,7 @@ import subprocess
 from camera_utils import is_camera_connected, list_available_cameras, get_connected_camera_model, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures
 import time
 import tkinter as tk
-from app_utils import choose_save_directory, calculate_mb_left, choose_destination_directory
+from app_utils import choose_save_directory, calculate_mb_left
 
 # Check if a camera is connected
 while not is_camera_connected():
@@ -150,11 +150,11 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
                 print("Invalid choice. Please try again.")
         
         elif choice == "3": # Transfer all captured pictures in this session
-                destination_directory = choose_destination_directory()  # Choose the destination directory
+                destination_directory = choose_save_directory()  # Choose the destination directory
                 print("Destination directory:", destination_directory)
                 if not destination_directory:
                     print("No destination directory chosen. Please choose a destination directory.")
-                    destination_directory = choose_destination_directory()
+                    destination_directory = choose_save_directory()
                     print("Destination directory:", destination_directory)
                 else:
                     print("Destination directory already chosen:", destination_directory)
