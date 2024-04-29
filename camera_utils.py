@@ -16,6 +16,13 @@ def is_camera_connected(): # Check if a camera is connected
     except subprocess.CalledProcessError:
         return False
 
+def disconnect_camera(): # Disconnect the camera
+            print("Disconnecting camera...")
+            subprocess.run(["gphoto2", "--auto-detect"])
+            subprocess.run(["gphoto2", "--port", "usb:", "--camera", "usb:", "--summary"])
+            subprocess.run(["gphoto2", "--port", "usb:", "--camera", "usb:", "--exit"])
+            print("Camera disconnected.")
+
 def list_available_cameras(): # List the available cameras
     """
     Lists the available cameras by running the 'gphoto2 --auto-detect' command.
@@ -161,7 +168,7 @@ def show_latest_picture(save_directory, filename): # Show the latest picture tak
     else:
         print("No photos found in the specified directory.")
 
-def copy_captured_pictures(session_directory, destination_directory):
+def copy_captured_pictures(session_directory, destination_directory): # Copy the captured pictures
     """
     Copies all captured pictures in the session directory to the desired destination directory.
     """
@@ -192,7 +199,6 @@ def copy_captured_pictures(session_directory, destination_directory):
             print(f"Failed to copy {photo_file}: {e}")
         except IOError as e:
             print(f"Failed to copy {photo_file}: {e}")
-            
 #TO DO list
 # continuous photo viewer add some kind of exit option xxx
 # add single photo viewer

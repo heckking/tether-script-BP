@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import subprocess
-from camera_utils import is_camera_connected, list_available_cameras, get_connected_camera_model, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures
+from camera_utils import is_camera_connected, list_available_cameras, get_connected_camera_model, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera
 import time
 import tkinter as tk
 from app_utils import choose_save_directory, calculate_mb_left
@@ -106,25 +106,27 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
             print("2. Change the save folder")
             print("3. Go back")
             
-            choice = input("Enter your choice (1-3): ")
-            if choice == "1": # Start Capture
-                print("Save Folder:", save_directory, "(", calculate_mb_left(save_directory), "MB left)")
-                time.sleep(2)  # Simulating delay before capturing picture
-                print("Starting capturing picture...")
-                show_latest_picture(save_directory)
-                
-            elif choice == "2": # Change the save folder
-                choice = input("Do you want to change the save folder? (y/n): ")
-                if choice.lower() == "y":
-                    save_directory = choose_save_directory()
-                    print("Save directory:", save_directory)
-                else:
-                    print("Save directory remains:", save_directory)
+            while True:
+                choice = input("Enter your choice (1-3): ")
+                if choice == "1": # Start Capture
+                    print("Save Folder:", save_directory, "(", calculate_mb_left(save_directory), "MB left)")
+                    time.sleep(2)  # Simulating delay before capturing picture
+                    print("Starting capturing picture...")
+                    show_latest_picture(save_directory)
                     
-            elif choice == "3": # Go back
-                break
-            else:
-                print("Invalid choice. Please try again.")
+                elif choice == "2": # Change the save folder
+                    choice = input("Do you want to change the save folder? (y/n): ")
+                    if choice.lower() == "y":
+                        save_directory = choose_save_directory()
+                        print("Save directory:", save_directory)
+                        print("Remaining storage:", calculate_mb_left(save_directory), "MB left")
+                    else:
+                        print("Save directory remains:", save_directory)
+                        print("Remaining storage:", calculate_mb_left(save_directory), "MB left")
+                elif choice == "3": # Go back
+                    break
+                else:
+                    print("Invalid choice. Please try again.")
                       
         elif choice == "2": # Save Folder settings
             print("Connected Camera:", camera["model"])
@@ -135,29 +137,34 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
             print("3. Change filename")
             print("4. Go back")
             
-            choice = input("Enter your choice (1-4): ")
-            
-            if choice == "1": # Open save folder
-                subprocess.Popen(["explorer", save_directory])
-            elif choice == "2": # Choose save folder
-                save_directory = choose_save_directory()
-                print("Save directory:", save_directory)
-            elif choice == "3": # Filename change
-                filename = input("Enter the custom filename: ")
-            elif choice == "4": # Go back
-                break
-            else:
-                print("Invalid choice. Please try again.")
-        
+            while True:
+                choice = input("Enter your choice (1-4): ")
+                
+                if choice == "1": # Open save folder
+                    subprocess.Popen(["explorer", save_directory])
+                elif choice == "2": # Choose save folder
+                    save_directory = choose_save_directory()
+                    print("Save directory:", save_directory)
+                elif choice == "3": # Filename change
+                    filename = input("Enter the custom filename: ")
+                elif choice == "4": # Go back
+                    break
+                else:
+                    print("Invalid choice. Please try again.")
+                    
         elif choice == "3": # Transfer all captured pictures in this session
                 destination_directory = choose_save_directory()  # Choose the destination directory
                 print("Destination directory:", destination_directory)
-                if not destination_directory:
+                if not destination_directory: # Check if a destination directory is chosen
                     print("No destination directory chosen. Please choose a destination directory.")
                     destination_directory = choose_save_directory()
                     print("Destination directory:", destination_directory)
                 else:
                     print("Destination directory already chosen:", destination_directory)
+                
+                if not save_directory: # Check if a save directory is chosen
+                    print("No save directory chosen. Please choose a save directory.")
+                    break
                 
                 # Copy captured pictures to the destination directory
                 print("Copying captured pictures to the destination directory...")
@@ -168,34 +175,55 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
                 # Go back to the main menu
                 break
 
-        elif choice == "4":
+        elif choice == "4": # Camera info
             print("1. My Camera info")
             print("2. All Supported Cameras")
             print("3. Go back")
             
             choice = input("Enter your choice (1-3): ")
-            if choice == "1":
-                print("Camera info:", camera["model"])
-            elif choice == "2":
-                print("All Supported Cameras:")
-                for camera in cameras:
-                    print(camera)
-            elif choice == "3":
+            while True:
+                if choice == "1":
+                    print("Camera info:", camera["model"])
+                elif choice == "2":
+                    print("All Supported Cameras:")
+                    for camera in cameras:
+                        print(camera)
+                elif choice == "3":
+                    break
+                else:
+                    print("Invalid choice. Please try again.")
+                choice = input("Enter your choice (1-3): ")
+                
+        elif choice == "5": # Start new session
+            confirm = input("Are you sure you want to start a new session? (y/n): ")
+            if confirm.lower() == "y":
+                cameras = []
+                save_directory = None
+                destination_directory = None
+                camera = {}
                 break
             else:
-                print("Invalid choice. Please try again.")
+                print("Session not restarted.")
                 
-        elif choice == "5":
-            # Add your code for option 5 here
-            pass
-        elif choice == "6":
-            # Add your code for option 6 here
-            pass
-        elif choice == "7":
-            # Add your code for option 7 here
-            pass
-        elif choice == "8":
-            # Add your code for option 8 here
+        elif choice == "6": # Reconnect camera
+            print("Reconnecting camera...")
+            confirm = input("Are you sure you want to reconnect the camera? (y/n): ")
+            if confirm.lower() == "y":
+                while not is_camera_connected():
+                    time.sleep(2)  # Simulating delay before checking again
+                print("Camera reconnected.")
+            else:
+                print("Camera not reconnected.")
+                
+        elif choice == "7": # Disconnect camera
+            confirm = input("Are you sure you want to disconnect the camera? (y/n): ")
+            if confirm.lower() == "y":
+                disconnect_camera()
+                print("Camera disconnected.")
+            else:
+                print("Camera not disconnected.")
+        
+        elif choice == "8": # Exit
             break
         else:
             print("Invalid choice. Please try again.")
