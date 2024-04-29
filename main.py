@@ -157,6 +157,6 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
         elif choice == "4":
             break
         else:
-            print("Invalid choice. Please try again.")
+            print("Invalid choice. Please try again. Maybe")
  
 print("Exiting camera application.")
