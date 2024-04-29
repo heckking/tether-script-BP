@@ -5,7 +5,7 @@ import os
 import time
 import cv2
 
-def is_camera_connected():
+def is_camera_connected(): # Check if a camera is connected
     """
     Checks if a camera is connected by running the 'gphoto2 --auto-detect' command.
     Returns the output of the command if successful, otherwise returns False.
@@ -15,7 +15,7 @@ def is_camera_connected():
     except subprocess.CalledProcessError:
         return False
 
-def list_available_cameras():
+def list_available_cameras(): # List the available cameras
     """
     Lists the available cameras by running the 'gphoto2 --auto-detect' command.
     Returns a list of available cameras if successful, otherwise returns an empty list.
@@ -25,7 +25,7 @@ def list_available_cameras():
     except subprocess.CalledProcessError:
         return []
 
-def get_connected_camera_model():
+def get_connected_camera_model(): # Get the model of the connected camera
     """
     Gets the model of the connected camera by running the 'gphoto2 --auto-detect' command.
     
@@ -41,7 +41,7 @@ def get_connected_camera_model():
     except subprocess.CalledProcessError:
         return None
 
-def save_tethered_picture(save_path):
+def save_tethered_picture(save_path): # Save a picture from the connected camera
     """
     Captures and saves a picture from the connected camera using the 'gphoto2 --capture-image-and-download' command.
     Returns True if successful, otherwise returns False.
@@ -52,7 +52,7 @@ def save_tethered_picture(save_path):
     except subprocess.CalledProcessError:
          return False
      
-def get_camera_info():    
+def get_camera_info(): # Get the camera information
     """
     Gets information about the connected camera using the 'gphoto2 --summary' command.
     Returns the camera information if successful, otherwise returns None.
@@ -63,7 +63,7 @@ def get_camera_info():
     except subprocess.CalledProcessError:
         return None
 
-def list_available_usb_ports():
+def list_available_usb_ports(): # List the available USB ports
     """
     Lists the available USB ports.
     """
@@ -75,7 +75,7 @@ def list_available_usb_ports():
     except subprocess.CalledProcessError:
         print("Failed to list available USB ports.")
         
-def capture_and_save_picture(save_directory, filename):
+def capture_and_save_picture(save_directory, filename): # Capture and save a picture
             """
             Captures and saves a picture from the connected camera into the chosen directory.
             """
@@ -162,6 +162,6 @@ def show_latest_picture(save_directory, filename): # Show the latest picture tak
 
 
 #TO DO list
-# continuous photo viewer add some kind of exit option x
+# continuous photo viewer add some kind of exit option xxx
 # add single photo viewer
 # add a way to save the photos x
