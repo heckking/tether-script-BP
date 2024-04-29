@@ -155,6 +155,19 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
             for port in usb_ports:
                 print(port)
         elif choice == "4":
+            # Add your code for option 4 here
+            pass
+        elif choice == "5":
+            # Add your code for option 5 here
+            pass
+        elif choice == "6":
+            # Add your code for option 6 here
+            pass
+        elif choice == "7":
+            # Add your code for option 7 here
+            pass
+        elif choice == "8":
+            # Add your code for option 8 here
             break
         else:
             print("Invalid choice. Please try again.")
