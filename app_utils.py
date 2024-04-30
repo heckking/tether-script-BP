@@ -3,6 +3,7 @@ from tkinter import filedialog
 import subprocess
 import os
 import keyboard
+import time
 
 def choose_save_directory(): # Choose the save directory for capture
     root = tk.Tk()
@@ -24,5 +25,6 @@ def calculate_mb_left(directory): # Calculate the available space of the disc wh
 def wait_for_keypress(): # Wait for a key press to continue
     print("Press any key to continue...")
     while keyboard.is_pressed():  # if key is pressed 
+        time.sleep(0.1)
         pass  # then do nothing
     keyboard.read_key()  # read the key
