@@ -8,24 +8,6 @@ import tkinter as tk # Cross-platform module for GUI
 import subprocess # Module for running shell commands
 import os # Module for interacting with the operating system
 
-# Check if a camera is connected
-"""
-while not is_camera_connected():
-    print("No camera is connected.")
-    time.sleep(2)  # Simulating delay before checking again
-
-print("Camera is connected.")
-print("Updating status bar...")
-time.sleep(2)  # Simulating delay for updating status bar
-print("Status bar updated: Camera is connected.")
-print("Camera model:", get_connected_camera_model())
-
-camera_info = get_camera_info()  # Get the information of the connected camera
-camera = {
-    "model": camera_info
-}
-"""
-
 """Menu layout prototype.
     
     Menu:
