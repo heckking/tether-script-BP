@@ -57,18 +57,7 @@ def get_connected_camera_model(): # Get the model of the connected camera
             return None
     except subprocess.CalledProcessError:
         return None
-
-def save_tethered_picture(save_path): # Save a picture from the connected camera
-    """
-    Captures and saves a picture from the connected camera using the 'gphoto2 --capture-image-and-download' command.
-    Returns True if successful, otherwise returns False.
-    """
-    try:
-         subprocess.check_output(['gphoto2', '--capture-image-and-download', '--filename', save_path])
-         return True
-    except subprocess.CalledProcessError:
-         return False
-     
+  
 def get_camera_info(): # Get the camera information
     """
     Gets information about the connected camera using the 'gphoto2 --summary' command.
@@ -124,6 +113,21 @@ def list_available_usb_ports(): # List the available USB ports
         return usb_ports
     except subprocess.CalledProcessError:
         print("Failed to list available USB ports.")
+
+"""
+These functions below capture and save a picture from the connected camera and then show it.
+"""
+
+def save_tethered_picture(save_path): # Save a picture from the connected camera
+    """
+    Captures and saves a picture from the connected camera using the 'gphoto2 --capture-image-and-download' command.
+    Returns True if successful, otherwise returns False.
+    """
+    try:
+         subprocess.check_output(['gphoto2', '--capture-image-and-download', '--filename', save_path])
+         return True
+    except subprocess.CalledProcessError:
+         return False
         
 def capture_and_save_picture(save_directory, filename, camera_model): # Capture and save a picture
             """
@@ -162,6 +166,9 @@ def show_latest_picture(save_directory, filename, camera_model): # Show the late
     """
     Shows the latest taken picture continuously with the given save directory.
     It accepts all photo file types.
+    
+    functions used for photo capture and save:
+    show_latest_picture <- capture_and_save_picture <- save_tethered_capture
     """
     # Get the list of files in the save directory
     file_list = os.listdir(save_directory)
