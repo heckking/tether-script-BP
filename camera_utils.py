@@ -179,7 +179,7 @@ def show_latest_picture(save_directory, filename, camera_model): # Show the late
         while True:
             # Calculate the available disk space in MB
             #calculate_mb_left(save_directory)
-            capture_and_save_picture(save_directory, filename, camera_model)
+            capture_and_save_picture(save_directory, filename, camera_model) # Capture and save a picture
             images.sort(key=lambda file: os.path.getmtime(os.path.join(save_directory, file))) # Sort the images by modification time
 
             latest_image = images[-1] # Get the latest image
