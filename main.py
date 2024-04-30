@@ -305,6 +305,8 @@ while True: # Main menu loop
             else:
                 print("Camera not reconnected.")
                 
+            wait_for_keypress()
+                
         elif choice == "7": # Disconnect camera
             confirm = input("Are you sure you want to disconnect the camera? (y/n): ")
             if confirm.lower() == "y":
@@ -312,6 +314,8 @@ while True: # Main menu loop
                 print("Camera disconnected.")
             else:
                 print("Camera not disconnected.")
+            
+            wait_for_keypress()
         
         elif choice == "8": # Exit
             break
