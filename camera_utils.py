@@ -3,6 +3,7 @@ import os
 import time
 import cv2
 import shutil
+from app_utils import calculate_mb_left, choose_save_directory
 
 def is_camera_connected(): # Check if a camera is connected
     """
@@ -99,7 +100,7 @@ def list_available_usb_ports(): # List the available USB ports
     except subprocess.CalledProcessError:
         print("Failed to list available USB ports.")
         
-def capture_and_save_picture(save_directory, filename): # Capture and save a picture
+def capture_and_save_picture(save_directory, filename, camera_model): # Capture and save a picture
             """
             Captures and saves a picture from the connected camera into the chosen directory.
             """
@@ -120,7 +121,10 @@ def capture_and_save_picture(save_directory, filename): # Capture and save a pic
 
             # Generate a unique file name for the captured picture
             timestamp = time.strftime("%Y%m%d-%H%M%S")
-            file_name = f"{filename}_{timestamp}.jpg"
+            if not filename:
+                filename = camera_model
+            file_extension = os.path.splitext(filename)[1]
+            file_name = f"{timestamp}{file_extension}"
             save_path = os.path.join(save_directory, file_name)
 
             # Capture and save the picture
@@ -129,7 +133,7 @@ def capture_and_save_picture(save_directory, filename): # Capture and save a pic
             else:
                 print("Failed to capture and save the picture.")
         
-def show_latest_picture(save_directory, filename): # Show the latest picture taken in window
+def show_latest_picture(save_directory, filename, camera_model): # Show the latest picture taken in window
     """
     Shows the latest taken picture continuously with the given save directory.
     It accepts all photo file types.
@@ -138,48 +142,36 @@ def show_latest_picture(save_directory, filename): # Show the latest picture tak
     file_list = os.listdir(save_directory)
 
     # Filter the file list to only include photo file types
-    photo_file_list = [file for file in file_list if file.endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png'))]
+    images = [file for file in file_list if file.endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png'))]
 
     # Sort the photo file list by modification time in descending order
-    photo_file_list.sort(key=lambda x: os.path.getmtime(os.path.join(save_directory, x)), reverse=True)
+    images.sort(key=lambda x: os.path.getmtime(os.path.join(save_directory, x)), reverse=True)
 
-    # Check if there are any photo files in the directory
-    if photo_file_list:
+    if images:
         # Get the path of the latest photo file
-        latest_file_path = os.path.join(save_directory, photo_file_list[0])
-
-        # Create a video capture object
-        cap = cv2.VideoCapture(latest_file_path)
+        #latest_file_path = os.path.join(save_directory, images[0])
 
         while True:
             # Calculate the available disk space in MB
-            available_space_mb = os.statvfs(save_directory).f_bavail * os.statvfs(save_directory).f_frsize / (1024 * 1024)
+            #calculate_mb_left(save_directory)
+            capture_and_save_picture(save_directory, filename, camera_model)
+            images.sort(key=lambda file: os.path.getmtime(os.path.join(save_directory, file))) # Sort the images by modification time
 
-            # Check if the available space is less than 200MB
-            if available_space_mb < 200:
-                # Display a warning popup to the user
-                popup_message = "Warning: There is less than 200MB of disk space left!"
-                cv2.putText(frame, popup_message, (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
-                cv2.imshow("Latest Picture Viewer", frame)
-                cv2.waitKey(0)
-                cv2.destroyAllWindows()
-            else:
-                if not filename:
-                    save_tethered_picture(save_directory)
-                else:
-                    capture_and_save_picture(save_directory, filename)
-            # Read a frame from the camera
-            frame = cap.read()
+            latest_image = images[-1] # Get the latest image
+
+            frame = cv2.imread(os.path.join(save_directory, latest_image)) # Read the latest image
 
             # Display the frame in a window
-            cv2.imshow("Latest Picture Viewer", frame)
+            cv2.namedWindow("Latest Picture Viewer", cv2.WINDOW_NORMAL) # Create a named window
+            cv2.setWindowProperty("Latest Picture Viewer", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN) # Set the window to fullscreen
+            cv2.imshow("Latest Picture Viewer", frame) # Show the frame
 
             # Check if the 'Esc' key is pressed
-            if cv2.waitKey(1) == 27:
+            if cv2.waitKey(0):
                 break
 
         # Release the video capture object and close the window
-        cap.release()
+
         cv2.destroyAllWindows()
     else:
         print("No photos found in the specified directory.")
