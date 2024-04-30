@@ -25,35 +25,7 @@ camera = {
     "model": camera_info
 }
 """
-cameras = []  # Define the "cameras" variable as an empty list
 
-while True:
-    save_directory = choose_save_directory() # Choose the save directory
-    if not save_directory:
-        print("No save directory chosen. Please choose a save directory.")
-    else:
-        print("Save directory:", save_directory)
-        break
-
-if cameras:
-    for camera in cameras:
-        print(camera)
-else:
-        print("No camera available.")
-    
-class FakeCamera:
-    def __init__(self, model):
-        self.model = model
-
-    # Create a fake camera object for testing
-fake_camera = FakeCamera("Nikon D750")
-camera = {
-        "model": fake_camera.model
-    }
-
-filename = camera["model"]
-
-  
 """Menu layout prototype.
     
     Menu:
@@ -90,6 +62,38 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
     """
 
 while True: # Main menu loop
+        if new_session_check: # Check if a new session is started
+            print("New session started.")
+            new_session_check = False
+            time.sleep(2)  # Simulating delay before showing the main menu
+            cameras = []  # Define the "cameras" variable as an empty list
+
+            while True:
+                save_directory = choose_save_directory() # Choose the save directory
+                if not save_directory:
+                    print("No save directory chosen. Please choose a save directory.")
+                else:
+                    print("Save directory:", save_directory)
+                    break
+
+            if cameras:
+                for camera in cameras:
+                    print(camera)
+            else:
+                    print("No camera available.")
+                
+            class FakeCamera:
+                def __init__(self, model):
+                    self.model = model
+
+                # Create a fake camera object for testing
+            fake_camera = FakeCamera("Nikon D750")
+            camera = {
+                    "model": fake_camera.model
+                }
+
+            filename = camera["model"]
+            
         if not is_camera_connected():
             print("Camera is disconnected.")
             print("Please connect the camera.")
@@ -183,10 +187,13 @@ while True: # Main menu loop
                 elif choice == "2": # Choose save folder
                     save_directory = choose_save_directory()
                     print("Save directory:", save_directory)
+                    wait_for_keypress()
                     
                 elif choice == "3": # Filename change
                     print("Current filename:", filename)
                     filename = input("Enter the custom filename: ")
+                    print("Filename changed to:", filename)
+                    wait_for_keypress()
                     
                 elif choice == "4": # Go back
                     break
@@ -226,18 +233,17 @@ while True: # Main menu loop
                 print("3. All supported cameras")
                 print("4. All available USB ports")
                 print("5. Go back")
-                choice = input("Enter your choice (1-5): ")                
+                choice = input("Enter your choice (1-5): ") 
+                               
                 if choice == "1": # My Camera info
                     print("Camera Information:")
                     show_camera_info(camera) # Show the camera information
-                    print("Press any key to continue...")
                     wait_for_keypress()
                         
                 elif choice == "2": # All connected cameras
                     print("All Connected Cameras:")
                     for camera in cameras:
                         print(camera)
-                    print("Press any key to continue...")
                     wait_for_keypress()
                     
                 elif choice == "3":
@@ -268,8 +274,10 @@ while True: # Main menu loop
                 save_directory = None
                 destination_directory = None
                 camera = {}
+                new_session_check = True
                 print("New session started.")
                 time.sleep(2)  # Simulating delay before showing the main menu
+                wait_for_keypress()
             else:
                 print("Session not restarted.")
                 time.sleep(2) 

@@ -21,8 +21,7 @@ def calculate_mb_left(directory): # Calculate the available space of the disc wh
     else:
         return f"{mb_left:.2f} MB left"
 
-
-def wait_for_keypress():
+def wait_for_keypress(): # Wait for a key press to continue
     print("Press any key to continue...")
     while keyboard.is_pressed():  # if key is pressed 
         pass  # then do nothing
