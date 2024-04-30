@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from camera_utils import is_camera_connected, list_available_cameras, get_connected_camera_model, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera, show_camera_info
-from app_utils import choose_save_directory, calculate_mb_left
+from app_utils import choose_save_directory, calculate_mb_left, wait_for_keypress
 #import msvcrt   # Windows-specific module for keyboard input
 import keyboard # Cross-platform module for keyboard input
 import time # Module for time-related functions
@@ -191,28 +191,28 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
                     print("Camera Information:")
                     show_camera_info(camera) # Show the camera information
                     print("Press any key to continue...")
-                    keyboard.read_key()
+                    wait_for_keypress()
                         
                 elif choice == "2": # All connected cameras
                     print("All Connected Cameras:")
                     for camera in cameras:
                         print(camera)
                     print("Press any key to continue...")
-                    keyboard.read_key()
+                    wait_for_keypress()
                     
                 elif choice == "3":
                     print("All Supported Cameras:")
                     supported_cameras = list_available_cameras()
                     for camera in supported_cameras:
                         print(camera)
-                    keyboard.read_key()
+                    wait_for_keypress()
                     
                 elif choice == "4":
                     print("All Available USB Ports:")
                     usb_ports = list_available_usb_ports()
                     for port in usb_ports:
                         print(port)
-                    keyboard.read_key()
+                    wait_for_keypress()
                     
                 elif choice == "5":
                     break
