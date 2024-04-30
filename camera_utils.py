@@ -81,12 +81,38 @@ def get_camera_info(): # Get the camera information
         return None
 
 def show_camera_info(camera): # Show the camera information
-                        print("Model:", camera["model"])
-                        print("Serial Number:", camera["serial_number"])
-                        print("Firmware Version:", camera["firmware_version"])
-                        print("Battery Level:", camera["battery_level"])
-                        print("Storage Capacity:", camera["storage_capacity"])
-                        print("Remaining Storage:", camera["remaining_storage"])
+    """
+    Displays the information of the connected camera.
+    """
+    try:
+        print("Model:", camera["model"])
+    except KeyError as e:
+        print(f"Error: Missing key {e} in camera info.")
+
+    try:
+        print("Serial Number:", camera["serial_number"])
+    except KeyError as e:
+        print(f"Error: Missing key {e} in camera info.")
+
+    try:
+        print("Firmware Version:", camera["firmware_version"])
+    except KeyError as e:
+        print(f"Error: Missing key {e} in camera info.")
+
+    try:
+        print("Battery Level:", camera["battery_level"])
+    except KeyError as e:
+        print(f"Error: Missing key {e} in camera info.")
+
+    try:
+        print("Storage Capacity:", camera["storage_capacity"])
+    except KeyError as e:
+        print(f"Error: Missing key {e} in camera info.")
+
+    try:
+        print("Remaining Storage:", camera["remaining_storage"])
+    except KeyError as e:
+        print(f"Error: Missing key {e} in camera info.")
 
 def list_available_usb_ports(): # List the available USB ports
     """
@@ -95,8 +121,7 @@ def list_available_usb_ports(): # List the available USB ports
     try:
         output = subprocess.check_output(['lsusb']).decode()
         usb_ports = output.split('\n')
-        for port in usb_ports:
-            print(port)
+        return usb_ports
     except subprocess.CalledProcessError:
         print("Failed to list available USB ports.")
         
@@ -175,6 +200,7 @@ def show_latest_picture(save_directory, filename, camera_model): # Show the late
         cv2.destroyAllWindows()
     else:
         print("No photos found in the specified directory.")
+        time.sleep(2)
 
 def copy_captured_pictures(session_directory, destination_directory): # Copy the captured pictures
     """
@@ -195,7 +221,10 @@ def copy_captured_pictures(session_directory, destination_directory): # Copy the
 
     # Filter the file list to only include photo files
     photo_file_list = [file for file in file_list if file.endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png'))]
-
+    
+    if not photo_file_list: # Check if there are no photo files in the session directory
+        print("No photo files found in the session directory.")
+        return
     # Copy each photo file to the destination directory
     for photo_file in photo_file_list:
         source_path = os.path.join(session_directory, photo_file)
@@ -207,7 +236,11 @@ def copy_captured_pictures(session_directory, destination_directory): # Copy the
             print(f"Failed to copy {photo_file}: {e}")
         except IOError as e:
             print(f"Failed to copy {photo_file}: {e}")
+
+
 #TO DO list
 # continuous photo viewer add some kind of exit option xxx
-# add single photo viewer
+# add a way that the user is warnend if the copied file already exists
+# add a way that the user is asked if he wants to overwrite the file
+# add a way that warns the user if the copied session folder memory is too much memory for the destination folder and ask they want to proceed
 # add a way to save the photos x

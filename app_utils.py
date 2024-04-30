@@ -8,8 +8,8 @@ import time
 def choose_save_directory(): # Choose the save directory for capture
     root = tk.Tk()
     root.withdraw()
-    save_directory = filedialog.askdirectory()
-    return save_directory
+    directory = filedialog.askdirectory()
+    return directory
 
 def calculate_mb_left(directory): # Calculate the available space of the disc where the directory is located
     total_size = 0
@@ -23,7 +23,18 @@ def calculate_mb_left(directory): # Calculate the available space of the disc wh
         return f"{mb_left:.2f} MB left"
 
 def wait_for_keypress(): # Wait for a key press to continue
+    
+    """
     print("Press any key to continue...")
-    while keyboard.is_pressed():  # if key is pressed 
-        time.sleep(0.1)  # wait for 0.1 seconds
-    keyboard.read_key()  # read the key
+    while not keyboard.is_pressed():  # if key is pressed 
+        time.sleep(0.1)  # wait for 0.1 seconds    
+    """    
+    input("Press Enter to continue...")
+
+def clear_terminal(): # Clear the text from the terminal
+    if os.name == 'nt': 
+        # For Windows
+        _ = os.system('cls')
+    else: 
+        # For Linux and Mac
+        _ = os.system('clear')

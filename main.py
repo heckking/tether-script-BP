@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from camera_utils import is_camera_connected, list_available_cameras, get_connected_camera_model, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera, show_camera_info
-from app_utils import choose_save_directory, calculate_mb_left, wait_for_keypress
+from camera_utils import is_camera_connected, list_available_cameras, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera, show_camera_info
+from app_utils import choose_save_directory, calculate_mb_left, wait_for_keypress, clear_terminal
 #import msvcrt   # Windows-specific module for keyboard input
 import keyboard # Cross-platform module for keyboard input
 import time # Module for time-related functions
@@ -42,12 +42,12 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
 	8. Exit
 
     """
+new_session_check = True # Set starting value of the new session check variable to False
 
 while True: # Main menu loop
-        if new_session_check: # Check if a new session is started
+        if new_session_check: # Check if a new session is started and initialize the variables
             print("New session started.")
             new_session_check = False
-            time.sleep(2)  # Simulating delay before showing the main menu
             cameras = []  # Define the "cameras" variable as an empty list
 
             while True:
@@ -84,7 +84,7 @@ while True: # Main menu loop
             print("Camera is connected.")
             time.sleep(2)  # Simulating delay before showing the main menu
         
-        os.system('clear')
+        clear_terminal()
         print("Menu:")
         if is_camera_connected():
             print("Camera is connected.")
@@ -99,7 +99,7 @@ while True: # Main menu loop
         print("3. Transfer all captured pictures in this session") 
         print("4. Camera and system info")
         print("5. Start new session")
-        print("6. Reconnet camera")
+        print("6. Reconnect camera")
         print("7. Disconnect camera")
         print("8. Exit")
 
@@ -109,7 +109,7 @@ while True: # Main menu loop
             #print("Connected Camera:", camera["model"])
             #print("Save Folder:", save_directory, "(", calculate_mb_left(save_directory), ")")
             while True:
-                os.system('clear')
+                clear_terminal()
                 print("Connected Camera:", camera["model"])
                 print("Save Folder:", save_directory, "(", calculate_mb_left(save_directory), ")")
                 print("1. Start Capture session")
@@ -123,7 +123,7 @@ while True: # Main menu loop
                     time.sleep(2)  # Simulating delay before capturing picture
                     print("Starting capturing picture...")
                     time.sleep(2)  # Simulating delay before capturing picture
-                    os.system('clear')
+                    clear_terminal()
                     print('Press any key to exit the viewer.')
                     time.sleep(3)
                     show_latest_picture(save_directory, filename, camera["model"])
@@ -152,29 +152,46 @@ while True: # Main menu loop
         elif choice == "2": # Save Folder settings
             
             while True:
-                os.system('clear')
+                clear_terminal()
                 print("Connected Camera:", camera["model"])
                 print("Save Folder:", save_directory, "(", calculate_mb_left(save_directory), ")")
                 print("1. Open save folder")
                 print("2. Change save folder")
-                print("3. Change filename")
+                print("3. Change filename (Current filename:", filename, ")")
                 print("4. Go back")
                 choice = input("Enter your choice (1-4): ")
                 
                 if choice == "1": # Open save folder
                     #subprocess.Popen(["explorer", save_directory])
-                    print("Opening save folder...")
-                    subprocess.Popen(["xdg-open", save_directory])
+                    with open(os.devnull, 'w') as devnull: # Suppressing the output of the command
+                        try:    
+                            subprocess.Popen(['xdg-open', save_directory], stderr=devnull)
+                        except PermissionError:
+                            print("Please run the program with sudo privileges to open the save folder.")
+                    wait_for_keypress()
                     
                 elif choice == "2": # Choose save folder
+                    clear_terminal()
+                    print("Please choose a save directory.")
+                    time.sleep(2)  # Simulating delay before choosing the save directory
                     save_directory = choose_save_directory()
                     print("Save directory:", save_directory)
+                    time.sleep(2)  # Simulating delay before showing the menu again
                     wait_for_keypress()
                     
                 elif choice == "3": # Filename change
-                    print("Current filename:", filename)
-                    filename = input("Enter the custom filename: ")
-                    print("Filename changed to:", filename)
+                    while True: # Filename change menu loop
+                        clear_terminal()
+                        print("Current filename:", filename)
+                        filename = input("Enter the custom filename: ")
+                        if not filename or filename.strip() == "":
+                            print("Invalid filename. Please enter a valid filename.")
+                            time.sleep(0.5)  # Simulating delay before showing the menu again
+                            wait_for_keypress()
+                            continue
+                        print("Filename changed to:", filename)
+                        break
+                    time.sleep(0.5)  # Simulating delay before showing the menu again
                     wait_for_keypress()
                     
                 elif choice == "4": # Go back
@@ -184,32 +201,42 @@ while True: # Main menu loop
                     time.sleep(1)  # Simulating delay before showing the menu again
                     
         elif choice == "3": # Transfer all captured pictures in this session
-                os.system('clear')
+                clear_terminal()
                 print("Choose a destination directory to transfer the captured pictures.\n")
-                time.sleep(3)  # Simulating delay before choosing the destination directory
-                destination_directory = choose_save_directory()  # Choose the destination directory
-                print("Destination directory:", destination_directory)
-                if not destination_directory: # Check if a destination directory is chosen
-                    print("No destination directory chosen. Please choose a destination directory.")
-                    destination_directory = choose_save_directory()
+                time.sleep(1)  # Simulating delay before choosing the destination directory
+                while True:
+                    destination_directory = choose_save_directory()  # Choose the destination directory
                     print("Destination directory:", destination_directory)
-                else:
-                    print("Destination directory already chosen:", destination_directory)
-                
-                if not save_directory: # Check if a save directory is chosen
-                    print("No save directory chosen. Please choose a save directory.")
-                    break
+                    time.sleep(1)  # Simulating delay before copying the pictures
+
+                    if not destination_directory:  # Check if a destination directory is chosen
+                        print("No destination directory chosen. Please choose a destination directory.")
+                        continue
+
+                    if not save_directory:  # Check if a save directory is chosen
+                        print("No save directory chosen. Please choose a save directory.")
+                        continue
+
+                    if save_directory == destination_directory:  # Check if the save and destination directories are the same
+                        print("Save and destination directories are the same.")
+                        print("Please choose a different destination directory.")
+                        continue
+
+                    break  # Exit the loop if all checks passed
+                                    
                 
                 # Copy captured pictures to the destination directory
                 print("Copying captured pictures to the destination directory...")
                 
-                copy_captured_pictures(save_directory, destination_directory)
-                print("Pictures copied successfully.")
-                time.sleep(5)  # Simulating delay before going back to the main menu
+                if not copy_captured_pictures(save_directory, destination_directory):
+                    print("No pictures to copy.")
+                else:
+                    print("Pictures copied successfully.")
+                wait_for_keypress()
                 
         elif choice == "4": # Camera info
             while True: # Camera info menu loop
-                os.system('clear')
+                clear_terminal()
                 print("1. My Camera info")
                 print("2. All connected cameras")
                 print("3. All supported cameras")
@@ -218,17 +245,20 @@ while True: # Main menu loop
                 choice = input("Enter your choice (1-5): ") 
                                
                 if choice == "1": # My Camera info
+                    clear_terminal()
                     print("Camera Information:")
                     show_camera_info(camera) # Show the camera information
                     wait_for_keypress()
                         
                 elif choice == "2": # All connected cameras
+                    clear_terminal()
                     print("All Connected Cameras:")
                     for camera in cameras:
                         print(camera)
                     wait_for_keypress()
                     
                 elif choice == "3":
+                    clear_terminal()
                     print("All Supported Cameras:")
                     supported_cameras = list_available_cameras()
                     for camera in supported_cameras:
@@ -236,6 +266,7 @@ while True: # Main menu loop
                     wait_for_keypress()
                     
                 elif choice == "4":
+                    clear_terminal()
                     print("All Available USB Ports:")
                     usb_ports = list_available_usb_ports()
                     for port in usb_ports:
@@ -249,7 +280,7 @@ while True: # Main menu loop
                     time.sleep(1)  # Simulating delay before showing the menu again
                 
         elif choice == "5": # Start new session
-            os.system('clear')
+            clear_terminal()
             confirm = input("Are you sure you want to start a new session? (y/n): ")
             if confirm.lower() == "y":
                 cameras = []
@@ -257,7 +288,7 @@ while True: # Main menu loop
                 destination_directory = None
                 camera = {}
                 new_session_check = True
-                print("New session started.")
+                print("New session starting...")
                 time.sleep(2)  # Simulating delay before showing the main menu
                 wait_for_keypress()
             else:
