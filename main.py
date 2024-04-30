@@ -42,7 +42,7 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
 	8. Exit
 
     """
-new_session_check = True # Set starting value of the new session check variable to False
+new_session_check = True # Set starting value of the new session check variable to True
 
 while True: # Main menu loop
         if new_session_check: # Check if a new session is started and initialize the variables
