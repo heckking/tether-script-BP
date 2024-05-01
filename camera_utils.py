@@ -199,12 +199,16 @@ def show_latest_picture(save_directory, filename, camera_model): # Show the late
             cv2.imshow("Latest Picture Viewer", frame) # Show the frame
 
             # Check if the 'Esc' key is pressed
-            if cv2.waitKey(0):
+            key = cv2.waitKey(0)
+            
+            if key == 27:  # 'Esc' key
                 break
+            elif key == 81:  # 'Left' arrow key
+                index = max(0, index - 1)
+            elif key == 83:  # 'Right' arrow key
+                index = min(len(images) - 1, index + 1)
 
-        # Release the video capture object and close the window
-
-        cv2.destroyAllWindows()
+        cv2.destroyAllWindows() # Close all windows
     else:
         print("No photos found in the specified directory.")
         time.sleep(2)
