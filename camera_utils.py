@@ -170,26 +170,27 @@ def show_latest_picture(save_directory, filename, camera_model): # Show the late
     functions used for photo capture and save:
     show_latest_picture <- capture_and_save_picture <- save_tethered_capture
     """
-    # Get the list of files in the save directory
-    file_list = os.listdir(save_directory)
+    index = -1    
 
-    # Filter the file list to only include photo file types
-    images = [file for file in file_list if file.endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png'))]
+    while True:
+        # Get the list of files in the save directory
+        capture_and_save_picture(save_directory, filename, camera_model) # Capture and save a picture
+        
+        file_list = os.listdir(save_directory)
 
-    # Sort the photo file list by modification time in descending order
-    images.sort(key=lambda x: os.path.getmtime(os.path.join(save_directory, x)), reverse=True)
+        # Filter the file list to only include photo file types
+        images = [file for file in file_list if file.endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png'))]
 
-    if images:
-        # Get the path of the latest photo file
-        #latest_file_path = os.path.join(save_directory, images[0])
+        # Sort the photo file list by modification time in descending order
+        images.sort(key=lambda x: os.path.getmtime(os.path.join(save_directory, x)), reverse=True)
 
-        while True:
-            # Calculate the available disk space in MB
+        if images:
+            # Get the path of the latest photo file
+            #latest_file_path = os.path.join(save_directory, images[0])
             #calculate_mb_left(save_directory)
-            capture_and_save_picture(save_directory, filename, camera_model) # Capture and save a picture
             images.sort(key=lambda file: os.path.getmtime(os.path.join(save_directory, file))) # Sort the images by modification time
 
-            latest_image = images[-1] # Get the latest image
+            latest_image = images[index] # Get the latest image
 
             frame = cv2.imread(os.path.join(save_directory, latest_image)) # Read the latest image
 
@@ -197,26 +198,29 @@ def show_latest_picture(save_directory, filename, camera_model): # Show the late
             cv2.namedWindow("Latest Picture Viewer", cv2.WINDOW_NORMAL) # Create a named window
             cv2.setWindowProperty("Latest Picture Viewer", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN) # Set the window to fullscreen
             cv2.imshow("Latest Picture Viewer", frame) # Show the frame
-
+            # Add instructions at the bottom of the window
+            # instructions = "Press 'Esc' to exit, 'Left' arrow key to view previous picture, 'Right' arrow key to view next picture"
             # Check if the 'Esc' key is pressed
             key = cv2.waitKey(0)
-            
+                
             if key == 27:  # 'Esc' key
+                cv2.destroyAllWindows() # Close all windows
                 break
             elif key == 81:  # 'Left' arrow key
-                index = max(0, index - 1)
+                index = max(index - 1, -len(images))
             elif key == 83:  # 'Right' arrow key
-                index = min(len(images) - 1, index + 1)
+                index = min(index + 1,- 1)
 
-        cv2.destroyAllWindows() # Close all windows
-    else:
-        print("No photos found in the specified directory.")
-        time.sleep(2)
+            
+        else:
+            print("No photos found in the specified directory.")
+            time.sleep(2)
 
 def copy_captured_pictures(session_directory, destination_directory): # Copy the captured pictures
     """
     Copies all captured pictures in the session directory to the desired destination directory.
     """
+    num_errors = 0
     # Check if the session directory exists
     if not os.path.exists(session_directory):
         print("Session directory does not exist.")
@@ -242,11 +246,18 @@ def copy_captured_pictures(session_directory, destination_directory): # Copy the
         destination_path = os.path.join(destination_directory, photo_file)
         try:
             shutil.copy2(source_path, destination_path)
-            print(f"Successfully copied {photo_file} to {destination_directory}.")
+            print(f"\nSuccessfully copied {photo_file} to {destination_directory}.")
         except shutil.Error as e:
             print(f"Failed to copy {photo_file}: {e}")
+            num_errors += 1
         except IOError as e:
             print(f"Failed to copy {photo_file}: {e}")
+            num_errors += 1
+            
+    if num_errors == 0:
+        print("\nAll photo files copied successfully.")
+    else:
+        print(f"Failed to copy {num_errors} photo files.")
 
 
 #TO DO list

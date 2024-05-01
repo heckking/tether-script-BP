@@ -124,7 +124,7 @@ while True: # Main menu loop
                     print("Starting capturing picture...")
                     time.sleep(2)  # Simulating delay before capturing picture
                     clear_terminal()
-                    print('Press any key to exit the viewer.')
+                    print('Press Esc key to exit the viewer.\nUse the arrow keys to navigate the pictures.\nPress Left arrow key to go back.\nPress Right arrow key to go forward.')
                     time.sleep(3)
                     show_latest_picture(save_directory, filename, camera["model"])
 
@@ -228,10 +228,11 @@ while True: # Main menu loop
                 # Copy captured pictures to the destination directory
                 print("Copying captured pictures to the destination directory...")
                 
-                if not copy_captured_pictures(save_directory, destination_directory):
-                    print("No pictures to copy.")
-                else:
-                    print("Pictures copied successfully.")
+                copy_captured_pictures(save_directory, destination_directory)
+               #     print("No pictures to copy.")
+                #else:
+                print("\nPicture copy done.\n")
+                
                 wait_for_keypress()
                 
         elif choice == "4": # Camera info
