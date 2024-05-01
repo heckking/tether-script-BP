@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from camera_utils import is_camera_connected, list_available_cameras, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera, show_camera_info
+from camera_utils import is_camera_connected, list_available_cameras, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera, show_camera_info, get_camera_abilities
 from app_utils import choose_save_directory, calculate_mb_left, wait_for_keypress, clear_terminal
 #import msvcrt   # Windows-specific module for keyboard input
 import keyboard # Cross-platform module for keyboard input
@@ -246,7 +246,9 @@ while True: # Main menu loop
                                
                 if choice == "1": # My Camera info
                     clear_terminal()
-                    print("Camera Information:")
+                    print("All supported abbilities of the connected camera:")
+                    get_camera_abilities()
+                    print("\nCamera Information:")
                     show_camera_info(camera) # Show the camera information
                     wait_for_keypress()
                         

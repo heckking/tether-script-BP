@@ -103,6 +103,16 @@ def show_camera_info(camera): # Show the camera information
     except KeyError as e:
         print(f"Error: Missing key {e} in camera info.")
 
+def get_camera_abilities():
+    try:
+        # Run the 'gphoto2 --abilities' command
+        output = subprocess.check_output(['gphoto2', '--abilities']).decode()
+
+        # Return the output of the command
+        return output
+    except subprocess.CalledProcessError:
+        return "An error occurred while trying to get the camera abilities."
+
 def list_available_usb_ports(): # List the available USB ports
     """
     Lists the available USB ports.
