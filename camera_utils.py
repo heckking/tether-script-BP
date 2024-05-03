@@ -2,6 +2,7 @@ import subprocess
 import os
 import time
 import cv2
+import sys
 import shutil
 from app_utils import calculate_mb_left, choose_save_directory, clear_terminal
 
@@ -131,7 +132,10 @@ def list_available_usb_ports(): # List the available USB ports
     Lists the available USB ports.
     """
     try:
-        output = subprocess.check_output(['lsusb']).decode()
+        if sys.platform == 'darwin':
+            output = subprocess.check_output(['system_profiler', 'SPUSBDataType']).decode()
+        else:
+            output = subprocess.check_output(['lsusb']).decode()
         usb_ports = output.split('\n')
         return usb_ports
     except subprocess.CalledProcessError:

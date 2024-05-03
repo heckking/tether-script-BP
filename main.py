@@ -7,6 +7,7 @@ import time # Module for time-related functions
 import tkinter as tk # Cross-platform module for GUI
 import subprocess # Module for running shell commands
 import os # Module for interacting with the operating system
+import sys
 
 """Menu layout prototype.
     
@@ -43,6 +44,8 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
 
     """
 new_session_check = True # Set starting value of the new session check variable to True
+
+
 
 while True: # Main menu loop
         if new_session_check: # Check if a new session is started and initialize the variables
@@ -171,8 +174,11 @@ while True: # Main menu loop
                 if choice == "1": # Open save folder
                     #subprocess.Popen(["explorer", save_directory])
                     with open(os.devnull, 'w') as devnull: # Suppressing the output of the command
-                        try:    
-                            subprocess.Popen(['xdg-open', save_directory], stderr=devnull)
+                        try:
+                            if sys.platform == "darwin": # Mac
+                                subprocess.Popen(['open', save_directory], stderr=devnull)
+                            else: # Linux
+                                subprocess.Popen(['xdg-open', save_directory], stderr=devnull)
                         except PermissionError:
                             print("Please run the program with sudo privileges to open the save folder.")
                     wait_for_keypress()
