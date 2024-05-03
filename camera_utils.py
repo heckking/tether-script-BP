@@ -5,6 +5,7 @@ import cv2
 import sys
 import shutil
 from app_utils import calculate_mb_left, choose_save_directory, clear_terminal
+import concurrent.futures # For threading
 
 def is_camera_connected(): # Check if a camera is connected
     """
@@ -145,13 +146,13 @@ def list_available_usb_ports(): # List the available USB ports
 These functions below capture and save a picture from the connected camera and then show it.
 """
 
-def save_tethered_picture(save_path): # Save a picture from the connected camera
+def save_tethered_picture(save_path, file_name, save_directory): # Save a picture from the connected camera
     """
-    Captures and saves a picture from the connected camera using the 'gphoto2 --capture-image-and-download' command.
+    Captures and saves a picture from the connected camera using the 'gphoto2 --capture-tethered' command.
     Returns True if successful, otherwise returns False.
     """
     try:
-         subprocess.check_output(['gphoto2','--capture-tethered=1','--capture-image-and-download', '--filename', save_path])
+         subprocess.check_output(['gphoto2','--capture-tethered', '--filename', file_name, '--folder=', save_directory])
          return True
     except subprocess.CalledProcessError:
          return False
@@ -184,7 +185,7 @@ def capture_and_save_picture(save_directory, filename, camera_model): # Capture 
             save_path = os.path.join(save_directory, file_name)
 
             # Capture and save the picture
-            if save_tethered_picture(save_path):
+            if save_tethered_picture(save_path, file_name, save_directory):
                 print("Picture captured and saved successfully.")
             else:
                 print("Failed to capture and save the picture.")
@@ -206,7 +207,7 @@ def show_latest_picture(save_directory, filename, camera_model): # Show the late
         file_list = os.listdir(save_directory)
 
         # Filter the file list to only include photo file types
-        images = [file for file in file_list if file.endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png'))]
+        images = [file for file in file_list if file.endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png', '.tif', '.tiff'))]
 
         # Sort the photo file list by modification time in descending order
         images.sort(key=lambda x: os.path.getmtime(os.path.join(save_directory, x)), reverse=True)
@@ -262,7 +263,7 @@ def copy_captured_pictures(session_directory, destination_directory): # Copy the
     file_list = os.listdir(session_directory)
 
     # Filter the file list to only include photo files
-    photo_file_list = [file for file in file_list if file.endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png'))]
+    photo_file_list = [file for file in file_list if file.endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png', '.tif', '.tiff'))] #přidat necase sensitive možnost
     
     clear_terminal()
     

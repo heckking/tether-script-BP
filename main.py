@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from camera_utils import is_camera_connected, list_available_cameras, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera, show_camera_info, get_camera_abilities
+from camera_utils import is_camera_connected, list_available_cameras, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera, show_camera_info, get_camera_abilities, get_connected_camera_model
 from app_utils import choose_save_directory, calculate_mb_left, wait_for_keypress, clear_terminal
 #import msvcrt   # Windows-specific module for keyboard input
 import keyboard # Cross-platform module for keyboard input
@@ -49,7 +49,10 @@ new_session_check = True # Set starting value of the new session check variable 
 
 while True: # Main menu loop
         if new_session_check: # Check if a new session is started and initialize the variables
+            clear_terminal()
             print("New session started.")
+            print("\033[94mChoose a save directory.\033[0m")
+            time.sleep(1)  # Simulating delay before choosing the save directory
             new_session_check = False
             cameras = []  # Define the "cameras" variable as an empty list
 
@@ -61,15 +64,18 @@ while True: # Main menu loop
                     print("Save directory:", save_directory)
                     break
 
+            cameras = get_connected_camera_model() # Check if a camera is connected
+
             if cameras:
                 for camera in cameras:
                     print(camera)
             else:
                     print("No camera available.")
-                
+            
             class FakeCamera:
                 def __init__(self, model):
                     self.model = model
+              
 
                 # Create a fake camera object for testing
             fake_camera = FakeCamera("Nikon D750")
