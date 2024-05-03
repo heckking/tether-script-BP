@@ -87,12 +87,12 @@ while True: # Main menu loop
         clear_terminal()
         print("Menu:")
         if is_camera_connected():
-            print("Camera is connected.")
+            print("\033[92mCamera is connected.\033[0m")
         else:
-            print("No camera is connected.")
+            print("\033[91mNo camera is connected.\033[0m")
             
         print("Connected Camera:", camera["model"])
-        print("Save Folder:", save_directory, "(", calculate_mb_left(save_directory), ")")
+        print("Save Folder: \033[94m{}\033[0m ({})".format(save_directory, calculate_mb_left(save_directory)))
 
         print("1. Capture")
         print("2. Save Folder settings")
@@ -111,7 +111,7 @@ while True: # Main menu loop
             while True:
                 clear_terminal()
                 print("Connected Camera:", camera["model"])
-                print("Save Folder:", save_directory, "(", calculate_mb_left(save_directory), ")")
+                print("Save Folder: \033[94m{}\033[0m ({})".format(save_directory, calculate_mb_left(save_directory)))
                 print("1. Start Capture session")
                 print("2. Change the save folder")
                 print("3. Go back")
@@ -119,34 +119,41 @@ while True: # Main menu loop
                 choice = input("Enter your choice (1-3): ")
                 
                 if choice == "1": # Start Capture
-                    print("Save Folder:", save_directory, "(", calculate_mb_left(save_directory), ")")
-                    time.sleep(2)  # Simulating delay before capturing picture
+                    print("Save Folder: \033[94m{}\033[0m ({})".format(save_directory, calculate_mb_left(save_directory)))
+                    time.sleep(1)  # Simulating delay before capturing picture
                     print("Starting capturing picture...")
-                    time.sleep(2)  # Simulating delay before capturing picture
+                    time.sleep(1)  # Simulating delay before capturing picture
                     clear_terminal()
-                    print('Press Esc key to exit the viewer.\nUse the arrow keys to navigate the pictures.\nPress Left arrow key to go back.\nPress Right arrow key to go forward.')
-                    time.sleep(3)
+                    print('Press Esc key to exit the viewer.\nUse the arrow keys to navigate the pictures.\n\nPress Left arrow key to go back.\nPress Right arrow key to go forward.\n')
+                    wait_for_keypress()
+                    time.sleep(1)
                     show_latest_picture(save_directory, filename, camera["model"])
 
                 elif choice == "2": # Change the save folder
-                    choice = input("Do you want to change the save folder? (y/n): ")
-                    if choice.lower() == "y":
+                    choice_folder = input("Do you want to change the save folder? (y/n): ")
+                    if choice_folder.lower() == "y":
                         new_save_directory = choose_save_directory()
-                        if new_save_directory: # Check if a new save directory is chosen
-                            save_directory = new_save_directory
-                            print("Save directory:", save_directory)
-                            print("Remaining storage:", calculate_mb_left(save_directory))
-                        else:
-                            print("Save directory remains:", save_directory)
-                            print("Remaining storage:", calculate_mb_left(save_directory))
+                        try:
+                            if new_save_directory: # Check if a new save directory is chosen
+                                save_directory = new_save_directory
+                                print("Save directory: \033[94m{}\033[0m".format(save_directory))
+                                print("Remaining storage:", calculate_mb_left(save_directory))
+                            else:
+                                print("Save directory remains: \033[94m{}\033[0m".format(save_directory))
+                                print("Remaining storage:", calculate_mb_left(save_directory))
+                            wait_for_keypress()
+                        except:
+                            print("Invalid save directory. Please choose a valid save directory.")
+                            time.sleep(1)
                     else:
-                        print("Save directory remains:", save_directory)
+                        print("Save directory remains: \033[94m{}\033[0m".format(save_directory))
                         print("Remaining storage:", calculate_mb_left(save_directory))
+                        wait_for_keypress()
                         
                 elif choice == "3": # Go back
                     break
                 else:
-                    print("\nInvalid choice. Please try again.")
+                    print("\033[91mInvalid choice. Please try again.\033[0m")
                     time.sleep(1)  # Simulating delay before showing the menu again
                       
         elif choice == "2": # Save Folder settings
@@ -154,7 +161,7 @@ while True: # Main menu loop
             while True:
                 clear_terminal()
                 print("Connected Camera:", camera["model"])
-                print("Save Folder:", save_directory, "(", calculate_mb_left(save_directory), ")")
+                print("Save Folder: \033[94m{}\033[0m ({})".format(save_directory, calculate_mb_left(save_directory)))
                 print("1. Open save folder")
                 print("2. Change save folder")
                 print("3. Change filename (Current filename:", filename, ")")
@@ -175,7 +182,7 @@ while True: # Main menu loop
                     print("Please choose a save directory.")
                     time.sleep(2)  # Simulating delay before choosing the save directory
                     save_directory = choose_save_directory()
-                    print("Save directory:", save_directory)
+                    print("Save directory: \033[94m{}\033[0m".format(save_directory))
                     time.sleep(2)  # Simulating delay before showing the menu again
                     wait_for_keypress()
                     
@@ -197,11 +204,12 @@ while True: # Main menu loop
                 elif choice == "4": # Go back
                     break
                 else:
-                    print("\nInvalid choice. Please try again.")
+                    print("\033[91mInvalid choice. Please try again.\033[0m")
                     time.sleep(1)  # Simulating delay before showing the menu again
                     
         elif choice == "3": # Transfer all captured pictures in this session
                 clear_terminal()
+                cancel = 0
                 print("Choose a destination directory to transfer the captured pictures.\n")
                 time.sleep(1)  # Simulating delay before choosing the destination directory
                 while True:
@@ -210,12 +218,16 @@ while True: # Main menu loop
                     time.sleep(1)  # Simulating delay before copying the pictures
 
                     if not destination_directory:  # Check if a destination directory is chosen
-                        print("No destination directory chosen. Please choose a destination directory.")
-                        continue
+                        clear_terminal()
+                        print("No destination directory chosen. Transfer cancelled.")
+                        cancel = 1
+                        break
 
                     if not save_directory:  # Check if a save directory is chosen
-                        print("No save directory chosen. Please choose a save directory.")
-                        continue
+                        clear_terminal()
+                        print("No save directory chosen. Transfer cancelled.")
+                        cancel = 1
+                        break
 
                     if save_directory == destination_directory:  # Check if the save and destination directories are the same
                         print("Save and destination directories are the same.")
@@ -226,12 +238,12 @@ while True: # Main menu loop
                                     
                 
                 # Copy captured pictures to the destination directory
-                print("Copying captured pictures to the destination directory...")
-                
-                copy_captured_pictures(save_directory, destination_directory)
-               #     print("No pictures to copy.")
-                #else:
-                print("\nPicture copy done.\n")
+                if cancel == 0: # Check if the transfer is cancelled
+                    print("Copying captured pictures to the destination directory...")
+                    copy_captured_pictures(save_directory, destination_directory)
+                #     print("No pictures to copy.")
+                    #else:
+                    print("\nPicture copy done.\n")
                 
                 wait_for_keypress()
                 
@@ -279,7 +291,7 @@ while True: # Main menu loop
                 elif choice == "5":
                     break
                 else:
-                    print("\nInvalid choice. Please try again.")
+                    print("\033[91mInvalid choice. Please try again.\033[0m")
                     time.sleep(1)  # Simulating delay before showing the menu again
                 
         elif choice == "5": # Start new session
@@ -323,7 +335,7 @@ while True: # Main menu loop
         elif choice == "8": # Exit
             break
         else:
-            print("\nInvalid choice. Please try again.")
+            print("\033[91mInvalid choice. Please try again.\033[0m")
             time.sleep(1) # Simulating delay before showing the menu again
  
 print("Exiting camera application.")

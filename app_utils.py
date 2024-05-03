@@ -18,9 +18,15 @@ def calculate_mb_left(directory): # Calculate the available space of the disc wh
     mb_left = total_size / (1024 * 1024)
     if mb_left > 1024:
         gb_left = mb_left / 1024
-        return f"{gb_left:.2f} GB left"
+        return f"\033[38;5;46m{gb_left:.2f} GB left\033[0m"  # Green color
     else:
-        return f"{mb_left:.2f} MB left"
+        if mb_left <= 1024:
+            gb_left = mb_left / 1024
+            return f"\033[38;5;46m{gb_left:.2f} GB left\033[0m"  # Green color
+        elif mb_left > 512:
+            return f"\033[38;5;202m{mb_left:.2f} MB left\033[0m"  # Orange color
+        else:
+            return f"\033[38;5;196m{mb_left:.2f} MB left\033[0m"  # Red color
 
 def wait_for_keypress(): # Wait for a key press to continue
     
@@ -29,7 +35,7 @@ def wait_for_keypress(): # Wait for a key press to continue
     while not keyboard.is_pressed():  # if key is pressed 
         time.sleep(0.1)  # wait for 0.1 seconds    
     """    
-    input("Press Enter to continue...")
+    input("\033[38;5;226mPress Enter to continue...\033[0m") # Yellow color
 
 def clear_terminal(): # Clear the text from the terminal
     if os.name == 'nt': 

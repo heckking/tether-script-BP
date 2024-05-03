@@ -3,7 +3,7 @@ import os
 import time
 import cv2
 import shutil
-from app_utils import calculate_mb_left, choose_save_directory
+from app_utils import calculate_mb_left, choose_save_directory, clear_terminal
 
 def is_camera_connected(): # Check if a camera is connected
     """
@@ -38,7 +38,7 @@ def list_supported_cameras(): # List the supported cameras
     Returns a list of supported cameras if successful, otherwise returns an empty list.
     """
     try:
-        return subprocess.check_output(['gphoto2', '--list-cameras']).decode().split('\n')[1:-1]
+        return subprocess.check_output(['gphoto2', '--list-cameras']).decode()
     except subprocess.CalledProcessError:
         return []
 
@@ -74,39 +74,52 @@ def show_camera_info(camera): # Show the camera information
     Displays the information of the connected camera.
     """
     try:
-        print("Model:", camera["model"])
+        print("\033[92mModel:", camera["model"], "\033[0m")
     except KeyError as e:
-        print(f"Error: Missing key {e} in camera info.")
+        print("\033[91mError: Missing key", e, "in camera info.\033[0m")
 
     try:
-        print("Serial Number:", camera["serial_number"])
-    except KeyError as e:
-        print(f"Error: Missing key {e} in camera info.")
+        output = subprocess.check_output(['gphoto2', '--abilities']).decode()
+        if '--capture-tethered' in output:
+            print("\033[92mThe connected camera supports tethered capture.\033[0m")
+        else:
+            print("\033[91mThe connected camera does not support tethered capture.\033[0m")
+    except subprocess.CalledProcessError:
+        print("\033[91m\nAn error occurred while trying to get the camera abilities.\n\033[0m")
 
     try:
-        print("Firmware Version:", camera["firmware_version"])
+        print("\033[92mSerial Number:", camera["serial_number"], "\033[0m")
     except KeyError as e:
-        print(f"Error: Missing key {e} in camera info.")
+        print("\033[91mError: Missing key", e, "in camera info.\033[0m")
 
     try:
-        print("Battery Level:", camera["battery_level"])
+        print("\033[92mFirmware Version:", camera["firmware_version"], "\033[0m")
     except KeyError as e:
-        print(f"Error: Missing key {e} in camera info.")
+        print("\033[91mError: Missing key", e, "in camera info.\033[0m")
 
     try:
-        print("Storage Capacity:", camera["storage_capacity"])
+        print("\033[92mBattery Level:", camera["battery_level"], "\033[0m")
     except KeyError as e:
-        print(f"Error: Missing key {e} in camera info.")
+        print("\033[91mError: Missing key", e, "in camera info.\033[0m")
 
     try:
-        print("Remaining Storage:", camera["remaining_storage"])
+        print("\033[92mStorage Capacity:", camera["storage_capacity"], "\033[0m")
     except KeyError as e:
-        print(f"Error: Missing key {e} in camera info.")
+        print("\033[91mError: Missing key", e, "in camera info.\033[0m")
+
+    try:
+        print("\033[92mRemaining Storage:", camera["remaining_storage"], "\033[0m")
+    except KeyError as e:
+        print("\033[91mError: Missing key", e, "in camera info.\033[0m")
 
 def get_camera_abilities():
     try:
         # Run the 'gphoto2 --abilities' command
-        output = subprocess.check_output(['gphoto2', '--abilities']).decode()
+        camera_model = get_connected_camera_model()
+        if camera_model:
+            output = subprocess.check_output(['gphoto2', '--abilities', camera_model]).decode()
+        else:
+            output = "No camera connected."
 
         # Return the output of the command
         return output
@@ -134,11 +147,11 @@ def save_tethered_picture(save_path): # Save a picture from the connected camera
     Returns True if successful, otherwise returns False.
     """
     try:
-         subprocess.check_output(['gphoto2', '--capture-image-and-download', '--filename', save_path])
+         subprocess.check_output(['gphoto2','--capture-tethered=1','--capture-image-and-download', '--filename', save_path])
          return True
     except subprocess.CalledProcessError:
          return False
-        
+           
 def capture_and_save_picture(save_directory, filename, camera_model): # Capture and save a picture
             """
             Captures and saves a picture from the connected camera into the chosen directory.
@@ -247,6 +260,8 @@ def copy_captured_pictures(session_directory, destination_directory): # Copy the
     # Filter the file list to only include photo files
     photo_file_list = [file for file in file_list if file.endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png'))]
     
+    clear_terminal()
+    
     if not photo_file_list: # Check if there are no photo files in the session directory
         print("No photo files found in the session directory.")
         return
@@ -268,7 +283,6 @@ def copy_captured_pictures(session_directory, destination_directory): # Copy the
         print("\nAll photo files copied successfully.")
     else:
         print(f"Failed to copy {num_errors} photo files.")
-
 
 #TO DO list
 # continuous photo viewer add some kind of exit option xxx
