@@ -52,11 +52,15 @@ def get_connected_camera_model(): # Get the model of the connected camera
         str: The model of the connected camera if successful, otherwise returns None.
     """
     try:
-        output = subprocess.check_output(['gphoto2', '--auto-detect']).decode().split('\n')[2:-1]
-        if output:
-            return output[0].split()[1]
-        else:
-            return None
+        result = subprocess.run(['gphoto2', '--auto-detect'], stdout=subprocess.PIPE)
+        output = result.stdout.decode('utf-8')
+        lines = output.split('\n')
+        models = []
+        for line in lines:
+            if 'usb:' in line:
+                model = line.split('usb:')[0].strip()
+                models.append(model)
+        return models
     except subprocess.CalledProcessError:
         return None
   
@@ -146,13 +150,13 @@ def list_available_usb_ports(): # List the available USB ports
 These functions below capture and save a picture from the connected camera and then show it.
 """
 
-def save_tethered_picture(save_path, file_name, save_directory): # Save a picture from the connected camera
+def save_tethered_picture(save_directory, filename): # Save a picture from the connected camera
     """
     Captures and saves a picture from the connected camera using the 'gphoto2 --capture-tethered' command.
     Returns True if successful, otherwise returns False.
     """
     try:
-         subprocess.check_output(['gphoto2','--capture-tethered', '--filename', file_name, '--folder=', save_directory])
+         subprocess.check_output(['gphoto2','--capture-tethered', '--filename', filename, '--folder=', save_directory])
          return True
     except subprocess.CalledProcessError:
          return False
@@ -190,24 +194,23 @@ def capture_and_save_picture(save_directory, filename, camera_model): # Capture 
             else:
                 print("Failed to capture and save the picture.")
         
-def show_latest_picture(save_directory, filename, camera_model): # Show the latest picture taken in window
+def show_latest_picture(save_directory): # Show the latest picture taken in window
     """
     Shows the latest taken picture continuously with the given save directory.
     It accepts all photo file types.
     
     functions used for photo capture and save:
-    show_latest_picture <- capture_and_save_picture <- save_tethered_capture
+    show_latest_picture <- capture_and_save_picture
     """
     index = -1    
 
     while True:
         # Get the list of files in the save directory
-        capture_and_save_picture(save_directory, filename, camera_model) # Capture and save a picture
-        
+        #capture_and_save_picture(save_directory, filename, camera_model) # Capture and save a picture
         file_list = os.listdir(save_directory)
 
         # Filter the file list to only include photo file types
-        images = [file for file in file_list if file.endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png', '.tif', '.tiff'))]
+        images = [file for file in file_list if file.lower().endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png', '.tif', '.tiff'))]
 
         # Sort the photo file list by modification time in descending order
         images.sort(key=lambda x: os.path.getmtime(os.path.join(save_directory, x)), reverse=True)
@@ -233,13 +236,13 @@ def show_latest_picture(save_directory, filename, camera_model): # Show the late
                 
             if key == 27:  # 'Esc' key
                 cv2.destroyAllWindows() # Close all windows
-                break
-            elif key == 81:  # 'Left' arrow key
+            elif key == 81 or key == 63234:  # 'Left' arrow key
                 index = max(index - 1, -len(images))
-            elif key == 83:  # 'Right' arrow key
-                index = min(index + 1,- 1)
+            elif key == 83 or key == 63235:  # 'Right' arrow key
+                index = min(index + 1, -1)
+            elif key == 32:  # 'Space' key
+                selected_photo = latest_image
 
-            
         else:
             print("No photos found in the specified directory.")
             time.sleep(2)

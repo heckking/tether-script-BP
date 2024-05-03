@@ -8,6 +8,7 @@ import tkinter as tk # Cross-platform module for GUI
 import subprocess # Module for running shell commands
 import os # Module for interacting with the operating system
 import sys
+import concurrent.futures # For threading
 
 """Menu layout prototype.
     
@@ -45,7 +46,8 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
     """
 new_session_check = True # Set starting value of the new session check variable to True
 
-
+get_connected_camera_model()
+wait_for_keypress()
 
 while True: # Main menu loop
         if new_session_check: # Check if a new session is started and initialize the variables
@@ -136,8 +138,11 @@ while True: # Main menu loop
                     print('Press Esc key to exit the viewer.\nUse the arrow keys to navigate the pictures.\n\nPress Left arrow key to go back.\nPress Right arrow key to go forward.\n')
                     wait_for_keypress()
                     time.sleep(1)
-                    show_latest_picture(save_directory, filename, camera["model"])
-
+                    
+                    with concurrent.futures.ProcessPoolExecutor() as executor:
+                        #future1 = executor.submit(save_tethered_picture, save_directory, filename)
+                        future2 = executor.submit(show_latest_picture, save_directory)
+            
                 elif choice == "2": # Change the save folder
                     choice_folder = input("Do you want to change the save folder? (y/n): ")
                     if choice_folder.lower() == "y":
@@ -280,11 +285,10 @@ while True: # Main menu loop
                 elif choice == "2": # All connected cameras
                     clear_terminal()
                     print("All Connected Cameras:")
-                    for camera in cameras:
-                        print(camera)
+                    print(camera["model"])
                     wait_for_keypress()
                     
-                elif choice == "3":
+                elif choice == "3": # All supported cameras
                     clear_terminal()
                     print("All Supported Cameras:")
                     supported_cameras = list_available_cameras()
@@ -292,7 +296,7 @@ while True: # Main menu loop
                         print(camera)
                     wait_for_keypress()
                     
-                elif choice == "4":
+                elif choice == "4": # All available USB ports
                     clear_terminal()
                     print("All Available USB Ports:")
                     usb_ports = list_available_usb_ports()
@@ -300,7 +304,7 @@ while True: # Main menu loop
                         print(port)
                     wait_for_keypress()
                     
-                elif choice == "5":
+                elif choice == "5": # Go back
                     break
                 else:
                     print("\033[91mInvalid choice. Please try again.\033[0m")
