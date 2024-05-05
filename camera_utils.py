@@ -6,7 +6,6 @@ import sys
 import shutil
 from app_utils import calculate_mb_left, choose_save_directory, clear_terminal
 import re
-import gphoto2 as gp
 import concurrent.futures # For threading
 
 def is_camera_connected(): # Check if a camera is connected
@@ -141,12 +140,12 @@ def get_camera_battery_level():
         print(f'Error getting battery level: {e}')
         return None
 
-def show_camera_info(camera): # Show the camera information
+def show_camera_info(camera_model, serial_number, firmware_version, battery_level, remaining_storage): # Show the camera information
     """
     Displays the information of the connected camera.
     """
     try:
-        print("\033[92mModel:", camera.model, "\033[0m")
+        print("\033[92mModel:", camera_model, "\033[0m")
     except KeyError as e:
         print("\033[91mError: Missing key", e, "in camera info.\033[0m")
 
@@ -160,17 +159,22 @@ def show_camera_info(camera): # Show the camera information
         print("\033[91m\nAn error occurred while trying to get the camera abilities.\n\033[0m")
 
     try:
-        print("\033[92mSerial Number:", camera.serial_number, "\033[0m")
+        print("\033[92mSerial Number:", serial_number, "\033[0m")
     except KeyError as e:
         print("\033[91mError: Missing key", e, "in camera info.\033[0m")
 
     try:
-        print("\033[92mFirmware Version:", camera.firmware_version, "\033[0m")
+        print("\033[92mFirmware Version:", firmware_version, "\033[0m")
     except KeyError as e:
         print("\033[91mError: Missing key", e, "in camera info.\033[0m")
 
     try:
-        print("\033[92mBattery Level:", camera.battery_level, "\033[0m")
+        print("\033[92mBattery Level:", battery_level, "\033[0m")
+    except KeyError as e:
+        print("\033[91mError: Missing key", e, "in camera info.\033[0m")
+        
+    try:
+        print("\033[92mRemaining Storage:", remaining_storage, "\033[0m")
     except KeyError as e:
         print("\033[91mError: Missing key", e, "in camera info.\033[0m")
 

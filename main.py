@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from camera_utils import is_camera_connected, list_available_cameras, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera, show_camera_info, get_camera_abilities, get_connected_camera_model, get_connected_camera_serial_number, get_camera_firmware_version, get_camera_battery_level, get_camera_abilities
+from camera_utils import is_camera_connected, list_available_cameras, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera, show_camera_info, get_camera_abilities, get_connected_camera_model, get_connected_camera_serial_number, get_camera_firmware_version, get_camera_battery_level, get_camera_abilities, get_camera_free_space
 from app_utils import choose_save_directory, calculate_mb_left, wait_for_keypress, clear_terminal
 #import msvcrt   # Windows-specific module for keyboard input
 import keyboard # Cross-platform module for keyboard input
@@ -67,11 +67,12 @@ while True: # Main menu loop
                     break
 
             class ConnectedCamera:
-                def __init__(self, model, serial_number, firmware_version, battery_level):
+                def __init__(self, model, serial_number, firmware_version, battery_level, remaining_storage):
                     self.model = model
                     self.serial_number = serial_number
                     self.firmware_version = firmware_version
                     self.battery_level = battery_level
+                    self.remaining_storage = remaining_storage
 
             ConnectedCamera.model = get_connected_camera_model()
             print(ConnectedCamera.model)            
@@ -81,6 +82,8 @@ while True: # Main menu loop
             print(ConnectedCamera.firmware_version)
             ConnectedCamera.battery_level = get_camera_battery_level()
             print(ConnectedCamera.battery_level)
+            ConnectedCamera.remaining_storage = get_camera_free_space()
+            
 
 
             wait_for_keypress()
@@ -88,6 +91,7 @@ while True: # Main menu loop
             serial_number = ConnectedCamera.serial_number
             firmware_version = ConnectedCamera.firmware_version
             battery_level = ConnectedCamera.battery_level
+            remaining_storage = ConnectedCamera.remaining_storage
             filename = camera_model.replace(" ", "_")
             
         if not is_camera_connected():
@@ -272,7 +276,7 @@ while True: # Main menu loop
                 clear_terminal()                
                 print("Connected Camera:", ConnectedCamera.model)
                 print("Save Folder: \033[94m{}\033[0m ({})".format(save_directory, calculate_mb_left(save_directory)))
-                print("1. My Camera info")
+                print("\033[91m1. My Camera info: WARNING not reliable\033[0m")
                 print("2. All connected cameras")
                 print("3. All supported cameras")
                 print("4. All available USB ports")
@@ -284,8 +288,7 @@ while True: # Main menu loop
                     print("All supported abbilities of the connected camera:")
                     print(get_camera_abilities())
                     print("\nCamera Information:")
-                    camera_instance = ConnectedCamera(model, serial_number, firmware_version, battery_level)
-                    show_camera_info(ConnectedCamera()) # Show the camera information
+                    show_camera_info(camera_model, serial_number, firmware_version, battery_level, remaining_storage) # Show the camera information
                     wait_for_keypress()
                         
                 elif choice == "2": # All connected cameras
