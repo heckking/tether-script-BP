@@ -1,2 +1,3 @@
 *.NEF
 .DS_Store
+test_session.py
