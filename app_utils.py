@@ -9,6 +9,7 @@ def choose_save_directory(): # Choose the save directory for capture
     root = tk.Tk()
     root.withdraw()
     directory = filedialog.askdirectory()
+    root.destroy()
     return directory
 
 def calculate_mb_left(directory): # Calculate the available space of the disc where the directory is located

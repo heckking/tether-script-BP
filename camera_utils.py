@@ -5,6 +5,8 @@ import cv2
 import sys
 import shutil
 from app_utils import calculate_mb_left, choose_save_directory, clear_terminal
+import re
+import gphoto2 as gp
 import concurrent.futures # For threading
 
 def is_camera_connected(): # Check if a camera is connected
@@ -18,11 +20,11 @@ def is_camera_connected(): # Check if a camera is connected
         return False
 
 def disconnect_camera(): # Disconnect the camera
-            print("Disconnecting camera...")
-            subprocess.run(["gphoto2", "--auto-detect"])
-            subprocess.run(["gphoto2", "--port", "usb:", "--camera", "usb:", "--summary"])
-            subprocess.run(["gphoto2", "--port", "usb:", "--camera", "usb:", "--exit"])
-            print("Camera disconnected.")
+    print("Disconnecting camera...")
+    subprocess.run(["gphoto2", "--auto-detect"])
+    subprocess.run(["gphoto2", "--port", "usb:", "--camera", "usb:", "--summary"])
+    subprocess.run(["gphoto2", "--port", "usb:", "--camera", "usb:", "--exit"])
+    print("Camera disconnected.")
 
 def list_available_cameras(): # List the available cameras
     """
@@ -55,16 +57,14 @@ def get_connected_camera_model(): # Get the model of the connected camera
         result = subprocess.run(['gphoto2', '--auto-detect'], stdout=subprocess.PIPE)
         output = result.stdout.decode('utf-8')
         lines = output.split('\n')
-        models = []
         for line in lines:
             if 'usb:' in line:
                 model = line.split('usb:')[0].strip()
-                models.append(model)
-        return models
+                return model
     except subprocess.CalledProcessError:
         return None
   
-def get_camera_info(): # Get the camera information
+def get_camera_info(info): # Get the camera information
     """
     Gets information about the connected camera using the 'gphoto2 --summary' command.
     Returns the camera information if successful, otherwise returns None.
@@ -75,12 +75,78 @@ def get_camera_info(): # Get the camera information
     except subprocess.CalledProcessError:
         return None
 
+def get_connected_camera_serial_number(): # Get the serial number of the connected camera
+    try:
+        # Run the gphoto2 command to get the serial number
+        result = subprocess.run(['gphoto2', '--get-config', 'serialnumber'], capture_output=True, text=True)
+
+        # Parse the output to get the serial number
+        lines = result.stdout.split('\n')
+        for line in lines:
+            if line.startswith('Current:'):
+                return line.split('Current: ')[1]
+
+        # If we didn't find the serial number, raise an exception
+        raise Exception('Could not find serial number')
+
+    except Exception as e:
+        print(f'Error getting serial number: {e}')
+        return None
+
+def get_camera_firmware_version():
+    """
+    Gets the firmware version of the connected camera by running the 'gphoto2 --get-config firmwareversion' command.
+    
+    Returns:
+        str: The firmware version of the connected camera if successful, otherwise returns None.
+    """
+    try:
+        # Run the gphoto2 command to get the serial number
+        result = subprocess.run(['gphoto2', '--get-config', 'deviceversion'], capture_output=True, text=True)
+
+        # Parse the output to get the serial number
+        lines = result.stdout.split('\n')
+        for line in lines:
+            if line.startswith('Current:'):
+                return line.split('Current: ')[1]
+
+        # If we didn't find the serial number, raise an exception
+        raise Exception('Could not find firmware version')
+
+    except Exception as e:
+        print(f'Error getting firmware version: {e}')
+        return None
+
+def get_camera_battery_level():
+    """
+    Gets the battery level of the connected camera by running the 'gphoto2 --get-config batterylevel' command.
+    
+    Returns:
+        str: The battery level of the connected camera if successful, otherwise returns None.
+    """
+    try:
+        # Run the gphoto2 command to get the serial number
+        result = subprocess.run(['gphoto2', '--get-config', 'batterylevel'], capture_output=True, text=True)
+
+        # Parse the output to get the serial number
+        lines = result.stdout.split('\n')
+        for line in lines:
+            if line.startswith('Current:'):
+                return line.split('Current: ')[1]
+
+        # If we didn't find the serial number, raise an exception
+        raise Exception('Could not find battery level')
+
+    except Exception as e:
+        print(f'Error getting battery level: {e}')
+        return None
+
 def show_camera_info(camera): # Show the camera information
     """
     Displays the information of the connected camera.
     """
     try:
-        print("\033[92mModel:", camera["model"], "\033[0m")
+        print("\033[92mModel:", camera.model, "\033[0m")
     except KeyError as e:
         print("\033[91mError: Missing key", e, "in camera info.\033[0m")
 
@@ -94,39 +160,51 @@ def show_camera_info(camera): # Show the camera information
         print("\033[91m\nAn error occurred while trying to get the camera abilities.\n\033[0m")
 
     try:
-        print("\033[92mSerial Number:", camera["serial_number"], "\033[0m")
+        print("\033[92mSerial Number:", camera.serial_number, "\033[0m")
     except KeyError as e:
         print("\033[91mError: Missing key", e, "in camera info.\033[0m")
 
     try:
-        print("\033[92mFirmware Version:", camera["firmware_version"], "\033[0m")
+        print("\033[92mFirmware Version:", camera.firmware_version, "\033[0m")
     except KeyError as e:
         print("\033[91mError: Missing key", e, "in camera info.\033[0m")
 
     try:
-        print("\033[92mBattery Level:", camera["battery_level"], "\033[0m")
+        print("\033[92mBattery Level:", camera.battery_level, "\033[0m")
     except KeyError as e:
         print("\033[91mError: Missing key", e, "in camera info.\033[0m")
 
+def get_camera_free_space():
+    """
+    Gets the free space of the connected camera by running the 'gphoto2 --storage-info' command.
+    Returns the free space in MiB or GiB if successful, otherwise returns None.
+    """
     try:
-        print("\033[92mStorage Capacity:", camera["storage_capacity"], "\033[0m")
-    except KeyError as e:
-        print("\033[91mError: Missing key", e, "in camera info.\033[0m")
+        # Run the gphoto2 command to get the storage info
+        result = subprocess.run(['gphoto2', '--storage-info'], capture_output=True, text=True)
 
-    try:
-        print("\033[92mRemaining Storage:", camera["remaining_storage"], "\033[0m")
-    except KeyError as e:
-        print("\033[91mError: Missing key", e, "in camera info.\033[0m")
+        # Use a regular expression to find the free space
+        match = re.search(r'free=(\d+)', result.stdout)
+        if match:
+            free_space_kb = int(match.group(1))
+            free_space_mib = free_space_kb / 1024
+            if free_space_mib >= 1024:
+                free_space_gib = free_space_mib / 1024
+                return f'{free_space_gib:.2f} GiB'
+            else:
+                return f'{free_space_mib:.2f} MiB'
+
+        # If we didn't find the free space, raise an exception
+        raise Exception('Could not find free space')
+
+    except Exception as e:
+        print(f'Error getting free space: {e}')
+        return None
 
 def get_camera_abilities():
     try:
         # Run the 'gphoto2 --abilities' command
-        camera_model = get_connected_camera_model()
-        if camera_model:
-            output = subprocess.check_output(['gphoto2', '--abilities', camera_model]).decode()
-        else:
-            output = "No camera connected."
-
+        output = subprocess.check_output(['gphoto2', '--abilities']).decode()
         # Return the output of the command
         return output
     except subprocess.CalledProcessError:
@@ -156,7 +234,7 @@ def save_tethered_picture(save_directory, filename): # Save a picture from the c
     Returns True if successful, otherwise returns False.
     """
     try:
-         subprocess.check_output(['gphoto2','--capture-tethered', '--filename', filename, '--folder=', save_directory])
+         subprocess.check_output(['gphoto2','--capture-tethered', '--filename', filename, '--folder', save_directory])
          return True
     except subprocess.CalledProcessError:
          return False

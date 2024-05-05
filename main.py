@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from camera_utils import is_camera_connected, list_available_cameras, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera, show_camera_info, get_camera_abilities, get_connected_camera_model
+from camera_utils import is_camera_connected, list_available_cameras, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera, show_camera_info, get_camera_abilities, get_connected_camera_model, get_connected_camera_serial_number, get_camera_firmware_version, get_camera_battery_level, get_camera_abilities
 from app_utils import choose_save_directory, calculate_mb_left, wait_for_keypress, clear_terminal
 #import msvcrt   # Windows-specific module for keyboard input
 import keyboard # Cross-platform module for keyboard input
@@ -46,15 +46,15 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
     """
 new_session_check = True # Set starting value of the new session check variable to True
 
-get_connected_camera_model()
+
 wait_for_keypress()
 
 while True: # Main menu loop
         if new_session_check: # Check if a new session is started and initialize the variables
+            is_camera_connected()
             clear_terminal()
             print("New session started.")
             print("\033[94mChoose a save directory.\033[0m")
-            time.sleep(1)  # Simulating delay before choosing the save directory
             new_session_check = False
             cameras = []  # Define the "cameras" variable as an empty list
 
@@ -66,26 +66,29 @@ while True: # Main menu loop
                     print("Save directory:", save_directory)
                     break
 
-            cameras = get_connected_camera_model() # Check if a camera is connected
-
-            if cameras:
-                for camera in cameras:
-                    print(camera)
-            else:
-                    print("No camera available.")
-            
-            class FakeCamera:
-                def __init__(self, model):
+            class ConnectedCamera:
+                def __init__(self, model, serial_number, firmware_version, battery_level):
                     self.model = model
-              
+                    self.serial_number = serial_number
+                    self.firmware_version = firmware_version
+                    self.battery_level = battery_level
 
-                # Create a fake camera object for testing
-            fake_camera = FakeCamera("Nikon D750")
-            camera = {
-                    "model": fake_camera.model
-                }
+            ConnectedCamera.model = get_connected_camera_model()
+            print(ConnectedCamera.model)            
+            ConnectedCamera.serial_number = get_connected_camera_serial_number()
+            print(ConnectedCamera.serial_number)
+            ConnectedCamera.firmware_version = get_camera_firmware_version()
+            print(ConnectedCamera.firmware_version)
+            ConnectedCamera.battery_level = get_camera_battery_level()
+            print(ConnectedCamera.battery_level)
 
-            filename = camera["model"]
+
+            wait_for_keypress()
+            camera_model = ConnectedCamera.model
+            serial_number = ConnectedCamera.serial_number
+            firmware_version = ConnectedCamera.firmware_version
+            battery_level = ConnectedCamera.battery_level
+            filename = camera_model.replace(" ", "_")
             
         if not is_camera_connected():
             print("Camera is disconnected.")
@@ -102,7 +105,7 @@ while True: # Main menu loop
         else:
             print("\033[91mNo camera is connected.\033[0m")
             
-        print("Connected Camera:", camera["model"])
+        print("Connected Camera:", ConnectedCamera.model)
         print("Save Folder: \033[94m{}\033[0m ({})".format(save_directory, calculate_mb_left(save_directory)))
 
         print("1. Capture")
@@ -121,7 +124,7 @@ while True: # Main menu loop
             #print("Save Folder:", save_directory, "(", calculate_mb_left(save_directory), ")")
             while True:
                 clear_terminal()
-                print("Connected Camera:", camera["model"])
+                print("Connected Camera:", ConnectedCamera.model)
                 print("Save Folder: \033[94m{}\033[0m ({})".format(save_directory, calculate_mb_left(save_directory)))
                 print("1. Start Capture session")
                 print("2. Change the save folder")
@@ -174,7 +177,7 @@ while True: # Main menu loop
             
             while True:
                 clear_terminal()
-                print("Connected Camera:", camera["model"])
+                print("Connected Camera:", ConnectedCamera.model)
                 print("Save Folder: \033[94m{}\033[0m ({})".format(save_directory, calculate_mb_left(save_directory)))
                 print("1. Open save folder")
                 print("2. Change save folder")
@@ -266,7 +269,9 @@ while True: # Main menu loop
                 
         elif choice == "4": # Camera info
             while True: # Camera info menu loop
-                clear_terminal()
+                clear_terminal()                
+                print("Connected Camera:", ConnectedCamera.model)
+                print("Save Folder: \033[94m{}\033[0m ({})".format(save_directory, calculate_mb_left(save_directory)))
                 print("1. My Camera info")
                 print("2. All connected cameras")
                 print("3. All supported cameras")
@@ -277,15 +282,16 @@ while True: # Main menu loop
                 if choice == "1": # My Camera info
                     clear_terminal()
                     print("All supported abbilities of the connected camera:")
-                    get_camera_abilities()
+                    print(get_camera_abilities())
                     print("\nCamera Information:")
-                    show_camera_info(camera) # Show the camera information
+                    camera_instance = ConnectedCamera(model, serial_number, firmware_version, battery_level)
+                    show_camera_info(ConnectedCamera()) # Show the camera information
                     wait_for_keypress()
                         
                 elif choice == "2": # All connected cameras
                     clear_terminal()
                     print("All Connected Cameras:")
-                    print(camera["model"])
+                    print(ConnectedCamera.model)
                     wait_for_keypress()
                     
                 elif choice == "3": # All supported cameras
