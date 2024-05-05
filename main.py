@@ -9,7 +9,8 @@ import subprocess # Module for running shell commands
 import os # Module for interacting with the operating system
 import sys
 import concurrent.futures # For threading
-
+import threading # For threading
+import multiprocessing
 """Menu layout prototype.
     
     Menu:
@@ -74,18 +75,12 @@ while True: # Main menu loop
                     self.battery_level = battery_level
                     self.remaining_storage = remaining_storage
 
-            ConnectedCamera.model = get_connected_camera_model()
-            print(ConnectedCamera.model)            
+            ConnectedCamera.model = get_connected_camera_model()        
             ConnectedCamera.serial_number = get_connected_camera_serial_number()
-            print(ConnectedCamera.serial_number)
             ConnectedCamera.firmware_version = get_camera_firmware_version()
-            print(ConnectedCamera.firmware_version)
             ConnectedCamera.battery_level = get_camera_battery_level()
-            print(ConnectedCamera.battery_level)
             ConnectedCamera.remaining_storage = get_camera_free_space()
-            
-
-
+                        
             wait_for_keypress()
             camera_model = ConnectedCamera.model
             serial_number = ConnectedCamera.serial_number
