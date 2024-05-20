@@ -127,9 +127,10 @@ while True: # Main menu loop
                 print("Save Folder: \033[94m{}\033[0m ({})".format(save_directory, calculate_mb_left(save_directory)))
                 print("1. Start Capture session")
                 print("2. Change the save folder")
-                print("3. Go back")
+                print("3. View pictures")
+                print("4. Go back")
             
-                choice = input("Enter your choice (1-3): ")
+                choice = input("Enter your choice (1-4): ")
                 
                 if choice == "1": # Start Capture
                     print("Save Folder: \033[94m{}\033[0m ({})".format(save_directory, calculate_mb_left(save_directory)))
@@ -141,9 +142,11 @@ while True: # Main menu loop
                     wait_for_keypress()
                     time.sleep(1)
                     
-                    with concurrent.futures.ProcessPoolExecutor() as executor:
-                        #future1 = executor.submit(save_tethered_picture, save_directory, filename)
-                        future2 = executor.submit(show_latest_picture, save_directory)
+                    p1 = subprocess.Popen(['python3', 'picture_viewer.py', save_directory])
+                    p2 = subprocess.Popen(['python3', 'tether_program.py', save_directory, filename])
+                    
+                    p1.wait()
+                    p2.wait()
             
                 elif choice == "2": # Change the save folder
                     choice_folder = input("Do you want to change the save folder? (y/n): ")
@@ -166,7 +169,11 @@ while True: # Main menu loop
                         print("Remaining storage:", calculate_mb_left(save_directory))
                         wait_for_keypress()
                         
-                elif choice == "3": # Go back
+                elif choice == "3": # View pictures
+                    p1 = subprocess.Popen(['python3', 'picture_viewer.py', save_directory])
+                    p1.wait()
+                
+                elif choice == "4": # Go back
                     break
                 else:
                     print("\033[91mInvalid choice. Please try again.\033[0m")
