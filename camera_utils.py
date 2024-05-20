@@ -443,3 +443,4 @@ def copy_captured_pictures(session_directory, destination_directory): # Copy the
 # add a way that the user is asked if he wants to overwrite the file
 # add a way that warns the user if the copied session folder memory is too much memory for the destination folder and ask they want to proceed
 # add a way to save the photos x
+# repair photo viewer border
