@@ -4,8 +4,13 @@ import time
 import cv2
 import sys
 import shutil
-from app_utils import calculate_mb_left, choose_save_directory, clear_terminal
+from app_utils import calculate_mb_left, choose_save_directory, clear_terminal, wait_for_keypress
 import re
+import time
+import numpy as np
+import rawpy
+import imageio
+import pyautogui
 import concurrent.futures # For threading
 
 def is_camera_connected(): # Check if a camera is connected
@@ -284,11 +289,15 @@ def show_latest_picture(save_directory): # Show the latest picture taken in wind
     functions used for photo capture and save:
     show_latest_picture <- capture_and_save_picture
     """
-    index = -1    
+    index = 0
+    latest_image = None
+    newest_image = None
+    selected_photos = []
+    tag_preview = False
+    border_applied = set()
 
     while True:
         # Get the list of files in the save directory
-        #capture_and_save_picture(save_directory, filename, camera_model) # Capture and save a picture
         file_list = os.listdir(save_directory)
 
         # Filter the file list to only include photo file types
@@ -296,39 +305,93 @@ def show_latest_picture(save_directory): # Show the latest picture taken in wind
 
         # Sort the photo file list by modification time in descending order
         images.sort(key=lambda x: os.path.getmtime(os.path.join(save_directory, x)), reverse=True)
-
+        if images[0] != newest_image: # Check if the newest image is different from the previous newest image
+            newest_image = images[0] if images else None
+            
         if images:
             # Get the path of the latest photo file
-            #latest_file_path = os.path.join(save_directory, images[0])
-            #calculate_mb_left(save_directory)
-            images.sort(key=lambda file: os.path.getmtime(os.path.join(save_directory, file))) # Sort the images by modification time
+            latest_file_path = os.path.join(save_directory, images[index])
+            latest_image = latest_file_path
+            print(latest_image)
+            """
+            if latest_file_path != latest_image:
+                latest_image = latest_file_path
+            """    
+            if tag_preview:
+                # Check if the latest image is in the selected photos list
+                if latest_image in selected_photos and latest_image not in border_applied:
+                    frame = cv2.copyMakeBorder(frame, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=(0, 255, 0))
+                    border_applied.add(latest_image)
+                elif latest_image not in border_applied:
+                    frame = cv2.copyMakeBorder(frame, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=(0, 0, 0))
+                    border_applied.add(latest_image)
+            else:
+                if latest_image.lower().endswith(('.nef', '.cr2', '.arw', '.tif', '.tiff')):                
+                    try:
+                        with rawpy.imread(latest_image) as raw:
+                            
+                            # Extract the embedded JPEG preview
+                            jpeg_data = raw.extract_thumb()
 
-            latest_image = images[index] # Get the latest image
-
-            frame = cv2.imread(os.path.join(save_directory, latest_image)) # Read the latest image
-
-            # Display the frame in a window
+                            # Check if a JPEG preview was found
+                            if jpeg_data.format == rawpy.ThumbFormat.JPEG:
+                                # Decode the JPEG data
+                                jpeg_array = np.frombuffer(jpeg_data.data, dtype=np.uint8)
+                                frame = cv2.imdecode(jpeg_array, cv2.IMREAD_COLOR)
+                            else:
+                                # If no JPEG preview was found, postprocess the RAW data (this will be slower)
+                                rgb = raw.postprocess()
+                                frame = cv2.cvtColor(rgb, cv2.COLOR_RGB2BGR)
+                    except rawpy.LibRawNonFatalError:
+                        print("Failed to read the RAW image.")
+                        time.sleep(2)
+                        if key == ord('a'):  # 'a' key
+                            index = max(index - 1, -len(images))
+                        elif key == ord('d'):  # 'd' key
+                            index = min(index + 1, len(images) - 1)
+                        else:
+                            index = max(index, -len(images))
+                        continue
+                else:
+                    frame = cv2.imread(latest_image)
+                # Check if the latest image is in the selected photos list
+                if latest_image in selected_photos and latest_image not in border_applied:
+                    frame = cv2.copyMakeBorder(frame, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=(0, 255, 0))
+                    border_applied.add(latest_image)
+                elif latest_image not in border_applied:
+                    frame = cv2.copyMakeBorder(frame, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=(0, 0, 0))
+                    border_applied.add(latest_image)
+                    
             cv2.namedWindow("Latest Picture Viewer", cv2.WINDOW_NORMAL) # Create a named window
-            cv2.setWindowProperty("Latest Picture Viewer", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN) # Set the window to fullscreen
+            cv2.setWindowProperty("Latest Picture Viewer", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN) # Set the window to fullscreen windowed mode
             cv2.imshow("Latest Picture Viewer", frame) # Show the frame
-            # Add instructions at the bottom of the window
-            # instructions = "Press 'Esc' to exit, 'Left' arrow key to view previous picture, 'Right' arrow key to view next picture"
-            # Check if the 'Esc' key is pressed
-            key = cv2.waitKey(0)
-                
+            
+            tag_preview = True
+        # Check if the 'Esc' key is pressed
+            key = cv2.waitKey(300) # Wait for 1 second before checking for new pictures            
             if key == 27:  # 'Esc' key
                 cv2.destroyAllWindows() # Close all windows
-            elif key == 81 or key == 63234:  # 'Left' arrow key
+                return selected_photos
+            elif key == ord('a'):  # 'a' key
                 index = max(index - 1, -len(images))
-            elif key == 83 or key == 63235:  # 'Right' arrow key
-                index = min(index + 1, -1)
+                tag_preview = False
+            elif key == ord('d'):  # 'd' key
+                index = min(index + 1, len(images) - 1) # Increment the index to move to the next image
+                tag_preview = False
             elif key == 32:  # 'Space' key
                 selected_photo = latest_image
-
+                if selected_photo in selected_photos:
+                    selected_photos.remove(selected_photo)
+                    border_applied.remove(selected_photo)
+                    tag_preview = False
+                else:
+                    # Add the selected photo to the list
+                    selected_photos.append(selected_photo)
+                    border_applied.remove(selected_photo)
+                    tag_preview = False
         else:
             print("No photos found in the specified directory.")
             time.sleep(2)
-
 def copy_captured_pictures(session_directory, destination_directory): # Copy the captured pictures
     """
     Copies all captured pictures in the session directory to the desired destination directory.
