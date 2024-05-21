@@ -293,7 +293,6 @@ def show_latest_picture(save_directory): # Show the latest picture taken in wind
     prev_image = None
     selected_photos = []
     tag_preview = False
-    border_applied = set()
 
     while True:
         # Get the list of files in the save directory
@@ -358,7 +357,8 @@ def show_latest_picture(save_directory): # Show the latest picture taken in wind
                     
             cv2.namedWindow("Latest Picture Viewer", cv2.WINDOW_NORMAL) # Create a named window
             cv2.setWindowProperty("Latest Picture Viewer", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN) # Set the window to fullscreen windowed mode
-            if latest_image != prev_image:
+           
+            if latest_image != prev_image: #check prev image
                 cv2.imshow("Latest Picture Viewer", frame) # Show the frame
                 prev_image = latest_image
                 print("Image framed: " + latest_image)
@@ -392,7 +392,7 @@ def show_latest_picture(save_directory): # Show the latest picture taken in wind
         else:
             print("No photos found in the specified directory.")
             time.sleep(2)
-def copy_captured_pictures(session_directory, destination_directory): # Copy the captured pictures
+def copy_captured_pictures(session_directory, destination_directory, selected_pictures): # Copy the captured pictures
     """
     Copies all captured pictures in the session directory to the desired destination directory.
     """
@@ -410,9 +410,23 @@ def copy_captured_pictures(session_directory, destination_directory): # Copy the
     # Get the list of files in the session directory
     file_list = os.listdir(session_directory)
 
-    # Filter the file list to only include photo files
-    photo_file_list = [file for file in file_list if file.endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png', '.tif', '.tiff'))] #přidat necase sensitive možnost
+    # Filter the file list based on selected_pictures
+    # Ask the user if they want to copy only selected pictures or all pictures
+    clear_terminal()
+    print(selected_pictures)
+    copy_option = input("Do you want to copy only selected pictures? (y/n): ")
+
+    if copy_option.lower() == "y":
+        if selected_pictures:
+            photo_file_list = [file for file in selected_pictures if file.lower().endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png', '.tif', '.tiff'))]
+        else:
+            print("No selected pictures found.")
+            return
+    else:
+        # Filter the file list to only include photo files
+        photo_file_list = [file for file in file_list if file.lower(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png', '.tif', '.tiff'))]
     
+    print(photo_file_list)
     clear_terminal()
     
     if not photo_file_list: # Check if there are no photo files in the session directory
