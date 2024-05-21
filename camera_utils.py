@@ -9,8 +9,6 @@ import re
 import time
 import numpy as np
 import rawpy
-import imageio
-import pyautogui
 import concurrent.futures # For threading
 
 def is_camera_connected(): # Check if a camera is connected
@@ -370,6 +368,8 @@ def show_latest_picture(save_directory): # Show the latest picture taken in wind
             key = cv2.waitKey(300) # Wait for 1 second before checking for new pictures            
             if key == 27:  # 'Esc' key
                 cv2.destroyAllWindows() # Close all windows
+                if selected_photos == []:
+                    return 0
                 return selected_photos
             elif key == ord('a'):  # 'a' key
                 index = max(index - 1, -len(images)) if index > 0 else index
