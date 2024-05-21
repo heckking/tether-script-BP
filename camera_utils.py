@@ -292,6 +292,7 @@ def show_latest_picture(save_directory): # Show the latest picture taken in wind
     index = 0
     latest_image = None
     newest_image = None
+    prev_image = None
     selected_photos = []
     tag_preview = False
     border_applied = set()
@@ -311,20 +312,17 @@ def show_latest_picture(save_directory): # Show the latest picture taken in wind
         if images:
             # Get the path of the latest photo file
             latest_file_path = os.path.join(save_directory, images[index])
-            latest_image = latest_file_path
-            print(latest_image)
+            if latest_image != latest_file_path: # Check if the latest image is different from the previous latest image
+                latest_image = latest_file_path
+                print("Latest image path:", latest_image)
+
+
             """
             if latest_file_path != latest_image:
                 latest_image = latest_file_path
             """    
             if tag_preview:
-                # Check if the latest image is in the selected photos list
-                if latest_image in selected_photos and latest_image not in border_applied:
-                    frame = cv2.copyMakeBorder(frame, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=(0, 255, 0))
-                    border_applied.add(latest_image)
-                elif latest_image not in border_applied:
-                    frame = cv2.copyMakeBorder(frame, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=(0, 0, 0))
-                    border_applied.add(latest_image)
+                pass
             else:
                 if latest_image.lower().endswith(('.nef', '.cr2', '.arw', '.tif', '.tiff')):                
                     try:
@@ -346,48 +344,50 @@ def show_latest_picture(save_directory): # Show the latest picture taken in wind
                         print("Failed to read the RAW image.")
                         time.sleep(2)
                         if key == ord('a'):  # 'a' key
-                            index = max(index - 1, -len(images))
+                            index = max(index - 1, 0)
                         elif key == ord('d'):  # 'd' key
                             index = min(index + 1, len(images) - 1)
                         else:
-                            index = max(index, -len(images))
+                            index = max(index, 0)
                         continue
                 else:
                     frame = cv2.imread(latest_image)
                 # Check if the latest image is in the selected photos list
-                if latest_image in selected_photos and latest_image not in border_applied:
-                    frame = cv2.copyMakeBorder(frame, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=(0, 255, 0))
-                    border_applied.add(latest_image)
-                elif latest_image not in border_applied:
-                    frame = cv2.copyMakeBorder(frame, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=(0, 0, 0))
-                    border_applied.add(latest_image)
+                if latest_image in selected_photos:
+                    frame = cv2.copyMakeBorder(frame, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=(0, 255, 0))  # Green border
+                else:
+                    frame = cv2.copyMakeBorder(frame, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=(0, 0, 0))  # Black border
                     
             cv2.namedWindow("Latest Picture Viewer", cv2.WINDOW_NORMAL) # Create a named window
             cv2.setWindowProperty("Latest Picture Viewer", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN) # Set the window to fullscreen windowed mode
-            cv2.imshow("Latest Picture Viewer", frame) # Show the frame
+            if latest_image != prev_image:
+                cv2.imshow("Latest Picture Viewer", frame) # Show the frame
+                prev_image = latest_image
+                print("Image framed: " + latest_image)
             
             tag_preview = True
-        # Check if the 'Esc' key is pressed
+            # Check if the 'Esc' key is pressed
             key = cv2.waitKey(300) # Wait for 1 second before checking for new pictures            
             if key == 27:  # 'Esc' key
                 cv2.destroyAllWindows() # Close all windows
                 return selected_photos
             elif key == ord('a'):  # 'a' key
-                index = max(index - 1, -len(images))
+                index = max(index - 1, -len(images)) if index > 0 else index
                 tag_preview = False
             elif key == ord('d'):  # 'd' key
-                index = min(index + 1, len(images) - 1) # Increment the index to move to the next image
+                index = min(index + 1, len(images) - 1) if index < len(images) - 1 else index
                 tag_preview = False
             elif key == 32:  # 'Space' key
                 selected_photo = latest_image
+                prev_image = None
                 if selected_photo in selected_photos:
                     selected_photos.remove(selected_photo)
-                    border_applied.remove(selected_photo)
+                    #border_applied.remove(selected_photo)
                     tag_preview = False
                 else:
                     # Add the selected photo to the list
                     selected_photos.append(selected_photo)
-                    border_applied.remove(selected_photo)
+                    #border_applied.remove(selected_photo)
                     tag_preview = False
         else:
             print("No photos found in the specified directory.")
@@ -443,4 +443,6 @@ def copy_captured_pictures(session_directory, destination_directory): # Copy the
 # add a way that the user is asked if he wants to overwrite the file
 # add a way that warns the user if the copied session folder memory is too much memory for the destination folder and ask they want to proceed
 # add a way to save the photos x
-# repair photo viewer border
+# repair photo viewer border x
+
+
