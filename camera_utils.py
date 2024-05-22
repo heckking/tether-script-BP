@@ -241,7 +241,7 @@ def save_tethered_picture(save_directory): # Save a picture from the connected c
     Returns True if successful, otherwise returns False.
     """
     try:
-        subprocess.check_output(['gphoto2','--capture-tethered', '--filename', os.path.join(save_directory, '%C')])
+        subprocess.check_output(['gphoto2','--capture-tethered', '--filename', os.path.join(save_directory, '%f.%C')])
         return True
     except subprocess.CalledProcessError:
         return False

@@ -7,10 +7,7 @@ import time # Module for time-related functions
 import tkinter as tk # Cross-platform module for GUI
 import subprocess # Module for running shell commands
 import os # Module for interacting with the operating system
-import sys
-import concurrent.futures # For threading
-import threading # For threading
-import multiprocessing
+import sys # Module for system-specific parameters and functions
 import json # Module for working with JSON data
 """Menu layout prototype.
     
@@ -253,6 +250,7 @@ while True: # Main menu loop
             elif choice == "3": # View pictures
                 p1 = subprocess.Popen(['python3', 'picture_viewer.py', save_directory])
                 p1.wait()
+                wait_for_keypress()
             
             elif choice == "4": # Go back
                 break
