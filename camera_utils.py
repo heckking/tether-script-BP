@@ -370,7 +370,9 @@ def show_latest_picture(save_directory): # Show the latest picture taken in wind
                 cv2.destroyAllWindows() # Close all windows
                 if selected_photos == []:
                     return 0
-                return selected_photos
+                else:
+                    return selected_photos
+
             elif key == ord('a'):  # 'a' key
                 index = max(index - 1, -len(images)) if index > 0 else index
                 tag_preview = False
@@ -413,7 +415,8 @@ def copy_captured_pictures(session_directory, destination_directory, selected_pi
     # Filter the file list based on selected_pictures
     # Ask the user if they want to copy only selected pictures or all pictures
     clear_terminal()
-    print(selected_pictures)
+    print("file list:", file_list)
+    print("selected_pictures: ", selected_pictures)
     copy_option = input("Do you want to copy only selected pictures? (y/n): ")
 
     if copy_option.lower() == "y":
@@ -424,9 +427,10 @@ def copy_captured_pictures(session_directory, destination_directory, selected_pi
             return
     else:
         # Filter the file list to only include photo files
-        photo_file_list = [file for file in file_list if file.lower(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png', '.tif', '.tiff'))]
+        photo_file_list = [file for file in file_list if file.lower().endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png', '.tif', '.tiff'))]
     
     print(photo_file_list)
+    wait_for_keypress()
     clear_terminal()
     
     if not photo_file_list: # Check if there are no photo files in the session directory

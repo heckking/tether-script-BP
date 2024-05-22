@@ -4,9 +4,13 @@ from camera_utils import is_camera_connected, choose_save_directory, save_tether
 from app_utils import wait_for_keypress
 import subprocess
 import tempfile
+import json
+import os
 
 filename = 'testing'
 save_directory = choose_save_directory()
+if os.path.exists(save_directory + '/selected_pictures.json'):
+    os.remove(save_directory + '/selected_pictures.json')
 
 is_camera_connected()
 
@@ -40,23 +44,12 @@ p1 = subprocess.Popen(['python3', 'picture_viewer.py', save_directory])
 #p2 = subprocess.Popen(['python3', 'tether_program.py', save_directory, filename])
 
 p1.wait()
-# Create a temporary file to store the output
-with tempfile.NamedTemporaryFile(delete=True) as temp_file:
-    # Run the command and redirect the output to the temporary file
-    subprocess.run(['ls', save_directory], stdout=temp_file)
-
-    # Read the contents of the temporary file
-    temp_file.seek(0)
-    selected_pictures = temp_file.read().decode('utf-8')
-
-    # Get the output of p1
-    p1_output = p1.communicate()[0].decode('utf-8')
-
-    # Append p1 output to selected_pictures
-    selected_pictures += p1_output
 
 print("p1 is done")
-
+# Read selected_pictures.txt and put them in the selected photos list
+with open(save_directory + '/selected_pictures.json', 'r') as f:
+    selected_pictures = json.load(f)
+    selected_pictures = [os.path.basename(file) for file in selected_pictures]
 # Print the output
 print(selected_pictures)
 wait_for_keypress()
@@ -67,4 +60,7 @@ copy_captured_pictures(session_directory, destination_directory, selected_pictur
 #p2.send_signal(subprocess.signal.SIGINT)
 #p2.terminate()
 print("p2 is done")
+# Clear the selected_pictures.json file
+os.remove(save_directory + '/selected_pictures.json')
+
 wait_for_keypress()
