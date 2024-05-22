@@ -170,7 +170,7 @@ while True: # Main menu loop
                 p1.wait()
                 p2.wait()
                 
-                while True:
+                while True: # Picture transfer menu loop
                     copy_choice = input("Do you want to copy the captured pictures? (y/n): ")
                     if copy_choice.lower() == "y":
                         destination_directory = choose_save_directory()  # Choose the destination directory

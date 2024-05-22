@@ -235,16 +235,16 @@ def list_available_usb_ports(): # List the available USB ports
 These functions below capture and save a picture from the connected camera and then show it.
 """
 
-def save_tethered_picture(save_directory, filename): # Save a picture from the connected camera
+def save_tethered_picture(save_directory): # Save a picture from the connected camera
     """
     Captures and saves a picture from the connected camera using the 'gphoto2 --capture-tethered' command.
     Returns True if successful, otherwise returns False.
     """
     try:
-         subprocess.check_output(['gphoto2','--capture-tethered', '--filename', filename, '--folder', save_directory])
-         return True
+        subprocess.check_output(['gphoto2','--capture-tethered', '--filename', os.path.join(save_directory, '%C')])
+        return True
     except subprocess.CalledProcessError:
-         return False
+        return False
            
 def capture_and_save_picture(save_directory, filename, camera_model): # Capture and save a picture
             """
@@ -297,7 +297,12 @@ def show_latest_picture(save_directory, selected_pictures): # Show the latest pi
         selected_photos.extend(selected_pictures)
         
     tag_preview = False
-
+    file_list = os.listdir(save_directory)
+    
+    if not file_list:
+        cv2.namedWindow("Latest Picture Viewer", cv2.WINDOW_NORMAL) # Create a named window
+        cv2.setWindowProperty("Latest Picture Viewer", cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN) # Set the window to fullscreen windowed mode
+            
     while True:
         # Get the list of files in the save directory
         file_list = os.listdir(save_directory)
@@ -305,19 +310,27 @@ def show_latest_picture(save_directory, selected_pictures): # Show the latest pi
         # Filter the file list to only include photo file types
         images = [file for file in file_list if file.lower().endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png', '.tif', '.tiff'))]
 
+        # Wait until there is a supported photo file in the directory
+        while not images:
+            time.sleep(1)
+            file_list = os.listdir(save_directory)
+            images = [file for file in file_list if file.lower().endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png', '.tif', '.tiff'))]
+
         # Sort the photo file list by modification time in descending order
         images.sort(key=lambda x: os.path.getmtime(os.path.join(save_directory, x)), reverse=True)
         if images[0] != newest_image: # Check if the newest image is different from the previous newest image
             newest_image = images[0] if images else None
+            index = 0
+            tag_preview = False
             
         if images:
             # Get the path of the latest photo file
             latest_file_path = os.path.join(save_directory, images[index])
             if latest_image != latest_file_path: # Check if the latest image is different from the previous latest image
                 latest_image = latest_file_path
-                print("Latest image path:", latest_image)
 
-
+            print("Latest image path:", latest_image)
+                
             """
             if latest_file_path != latest_image:
                 latest_image = latest_file_path
@@ -369,7 +382,7 @@ def show_latest_picture(save_directory, selected_pictures): # Show the latest pi
             
             tag_preview = True
             # Check if the 'Esc' key is pressed
-            key = cv2.waitKey(300) # Wait for 1 second before checking for new pictures            
+            key = cv2.waitKey(200) # Wait for 1 second before checking for new pictures            
             if key == 27:  # 'Esc' key
                 cv2.destroyAllWindows() # Close all windows
                 if selected_photos == []:
