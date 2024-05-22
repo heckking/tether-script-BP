@@ -279,7 +279,7 @@ def capture_and_save_picture(save_directory, filename, camera_model): # Capture 
             else:
                 print("Failed to capture and save the picture.")
         
-def show_latest_picture(save_directory): # Show the latest picture taken in window
+def show_latest_picture(save_directory, selected_pictures): # Show the latest picture taken in window
     """
     Shows the latest taken picture continuously with the given save directory.
     It accepts all photo file types.
@@ -292,6 +292,10 @@ def show_latest_picture(save_directory): # Show the latest picture taken in wind
     newest_image = None
     prev_image = None
     selected_photos = []
+    
+    if selected_pictures is not None:
+        selected_photos.extend(selected_pictures)
+        
     tag_preview = False
 
     while True:
@@ -394,6 +398,7 @@ def show_latest_picture(save_directory): # Show the latest picture taken in wind
         else:
             print("No photos found in the specified directory.")
             time.sleep(2)
+            
 def copy_captured_pictures(session_directory, destination_directory, selected_pictures): # Copy the captured pictures
     """
     Copies all captured pictures in the session directory to the desired destination directory.
@@ -429,8 +434,6 @@ def copy_captured_pictures(session_directory, destination_directory, selected_pi
         # Filter the file list to only include photo files
         photo_file_list = [file for file in file_list if file.lower().endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png', '.tif', '.tiff'))]
     
-    print(photo_file_list)
-    wait_for_keypress()
     clear_terminal()
     
     if not photo_file_list: # Check if there are no photo files in the session directory
@@ -441,8 +444,28 @@ def copy_captured_pictures(session_directory, destination_directory, selected_pi
         source_path = os.path.join(session_directory, photo_file)
         destination_path = os.path.join(destination_directory, photo_file)
         try:
-            shutil.copy2(source_path, destination_path)
-            print(f"\nSuccessfully copied {photo_file} to {destination_directory}.")
+            if os.path.exists(destination_path):
+                choice = input(f"{photo_file} already exists in {destination_directory}.\nDo you want to (r)ewrite, (n)rename, or (s)kip?: ")
+                if choice.lower() == "r":
+                    shutil.copy2(source_path, destination_path)
+                    print(f"\nSuccessfully overwritten {photo_file} in {destination_directory}.\n")
+                elif choice.lower() == "n":
+                    # Generate a new filename with a number suffix
+                    n = 1
+                    new_filename = os.path.splitext(photo_file)[0] + "_" + str(n) + os.path.splitext(photo_file)[1]
+                    new_destination_path = os.path.join(destination_directory, new_filename)
+                    while os.path.exists(new_destination_path):
+                        n += 1
+                        new_filename = os.path.splitext(photo_file)[0] + "_" + str(n) + os.path.splitext(photo_file)[1]
+                        new_destination_path = os.path.join(destination_directory, new_filename)
+                        
+                    shutil.copy2(source_path, new_destination_path)
+                    print(f"\nSuccessfully renamed and copied {photo_file} to {new_destination_path}.\n")
+                else:
+                    print(f"\nSkipping {photo_file}.\n")
+            else:
+                shutil.copy2(source_path, destination_path)
+                print(f"\nSuccessfully copied {photo_file} to {destination_directory}.\n")
         except shutil.Error as e:
             print(f"Failed to copy {photo_file}: {e}")
             num_errors += 1
@@ -458,7 +481,7 @@ def copy_captured_pictures(session_directory, destination_directory, selected_pi
 #TO DO list
 # continuous photo viewer add some kind of exit option xxx
 # add a way that the user is warnend if the copied file already exists
-# add a way that the user is asked if he wants to overwrite the file
+# add a way that the user is asked if he wants to overwrite the file x
 # add a way that warns the user if the copied session folder memory is too much memory for the destination folder and ask they want to proceed
 # add a way to save the photos x
 # repair photo viewer border x

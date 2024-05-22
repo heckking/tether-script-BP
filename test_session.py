@@ -9,8 +9,21 @@ import os
 
 filename = 'testing'
 save_directory = choose_save_directory()
-if os.path.exists(save_directory + '/selected_pictures.json'):
-    os.remove(save_directory + '/selected_pictures.json')
+selected_pictures = []
+
+if os.path.exists(save_directory + '/selected_pictures.json'): #
+    print("Warning: There is still an active session in this folder.")
+    response = input("Do you want to continue with the session? (y/n): ")
+    while response.lower() != 'y' and response.lower() != 'n':
+        print("Invalid input. Please enter 'y' or 'n'.")
+        response = input("Do you want to continue with the session? (y/n): ")
+    
+    if response.lower() == 'n':
+        os.remove(save_directory + '/selected_pictures.json')
+    else:
+        with open(save_directory + '/selected_pictures.json', 'r') as f:
+            selected_pictures = json.load(f)
+            print(selected_pictures)
 
 is_camera_connected()
 
@@ -40,7 +53,7 @@ print(get_camera_abilities())
 """
 wait_for_keypress()
 
-p1 = subprocess.Popen(['python3', 'picture_viewer.py', save_directory])
+p1 = subprocess.Popen(['python3', 'picture_viewer.py', save_directory, json.dumps(selected_pictures)])
 #p2 = subprocess.Popen(['python3', 'tether_program.py', save_directory, filename])
 
 p1.wait()
@@ -56,11 +69,11 @@ wait_for_keypress()
 print("Waiting for the processes to finish...")
 session_directory = save_directory
 destination_directory = choose_save_directory()
+selected_pictures = [os.path.basename(file) for file in selected_pictures]
 copy_captured_pictures(session_directory, destination_directory, selected_pictures)
 #p2.send_signal(subprocess.signal.SIGINT)
 #p2.terminate()
 print("p2 is done")
 # Clear the selected_pictures.json file
-os.remove(save_directory + '/selected_pictures.json')
 
 wait_for_keypress()
