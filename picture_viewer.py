@@ -16,7 +16,6 @@ print(selected_pictures) # Print the selected picture
 file_names = [os.path.basename(file) for file in selected_pictures]
 
 """
-
 # Save the file names to a JSON file
 with open(save_directory + '/selected_pictures.json', 'w') as f:
     json.dump(selected_pictures, f)

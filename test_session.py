@@ -59,7 +59,7 @@ p1 = subprocess.Popen(['python3', 'picture_viewer.py', save_directory, json.dump
 p1.wait()
 
 print("p1 is done")
-# Read selected_pictures.txt and put them in the selected photos list
+# Read selected_pictures.json and put them in the selected photos list
 with open(save_directory + '/selected_pictures.json', 'r') as f:
     selected_pictures = json.load(f)
     selected_pictures = [os.path.basename(file) for file in selected_pictures]
@@ -70,10 +70,12 @@ print("Waiting for the processes to finish...")
 session_directory = save_directory
 destination_directory = choose_save_directory()
 selected_pictures = [os.path.basename(file) for file in selected_pictures]
+print(selected_pictures)
+wait_for_keypress()
 copy_captured_pictures(session_directory, destination_directory, selected_pictures)
 #p2.send_signal(subprocess.signal.SIGINT)
 #p2.terminate()
 print("p2 is done")
 # Clear the selected_pictures.json file
-
+os.remove(save_directory + '/selected_pictures.json')
 wait_for_keypress()
