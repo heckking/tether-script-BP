@@ -75,20 +75,24 @@ while True: # Main menu loop
                 self.remaining_storage = remaining_storage
 
         ConnectedCamera.model = get_connected_camera_model()        
+        """
         ConnectedCamera.serial_number = get_connected_camera_serial_number()
         ConnectedCamera.firmware_version = get_camera_firmware_version()
         ConnectedCamera.battery_level = get_camera_battery_level()
         ConnectedCamera.remaining_storage = get_camera_free_space()
-                    
+        """         
         wait_for_keypress()
         camera_model = ConnectedCamera.model
+        """
         serial_number = ConnectedCamera.serial_number
         firmware_version = ConnectedCamera.firmware_version
         battery_level = ConnectedCamera.battery_level
         remaining_storage = ConnectedCamera.remaining_storage
+        """
+        
         filename = camera_model.replace(" ", "_")
         
-    if os.path.exists(save_directory + '/selected_pictures.json'): #
+    if os.path.exists(save_directory + '/selected_pictures.json'): # Check if there is an active session in the folder
         print("Warning: There is still an active session in this folder.")
         response = input("Do you want to continue with the session? (y/n): ")
         while response.lower() != 'y' and response.lower() != 'n':
@@ -106,7 +110,8 @@ while True: # Main menu loop
             with open(save_directory + '/selected_pictures.json', 'r') as f:
                 selected_pictures = json.load(f)
                 print(selected_pictures)
-                
+    wait_for_keypress()
+    
     if not is_camera_connected():
         print("Camera is disconnected.")
         print("Please connect the camera.")
@@ -128,7 +133,7 @@ while True: # Main menu loop
     print("1. Capture")
     print("2. Save Folder settings")
     print("3. Transfer captured pictures in this session") 
-    print("4. Camera and system info")
+    print("4. Camera and system info (Work in progress)")
     print("5. Start new session")
     print("6. Reconnect camera")
     print("7. Disconnect camera")
@@ -248,7 +253,7 @@ while True: # Main menu loop
                     wait_for_keypress()
                     
             elif choice == "3": # View pictures
-                p1 = subprocess.Popen(['python3', 'picture_viewer.py', save_directory])
+                p1 = subprocess.Popen(['python3', 'picture_viewer.py', save_directory, json.dumps(selected_pictures)])
                 p1.wait()
                 wait_for_keypress()
             
@@ -375,7 +380,7 @@ while True: # Main menu loop
                     
             wait_for_keypress()
             
-    elif choice == "4": # Camera info
+    elif choice == "4": # Camera info (work in progress)
         while True: # Camera info menu loop
             clear_terminal()                
             print("Connected Camera:", ConnectedCamera.model)
@@ -389,10 +394,11 @@ while True: # Main menu loop
                             
             if choice == "1": # My Camera info
                 clear_terminal()
-                print("All supported abbilities of the connected camera:")
-                print(get_camera_abilities())
+                #print("All supported abbilities of the connected camera:")
+                #print(get_camera_abilities())
                 print("\nCamera Information:")
-                show_camera_info(camera_model, serial_number, firmware_version, battery_level, remaining_storage) # Show the camera information
+                print("Model:", camera_model)
+                #show_camera_info(camera_model, serial_number, firmware_version, battery_level, remaining_storage) # Show the camera information
                 wait_for_keypress()
                     
             elif choice == "2": # All connected cameras
