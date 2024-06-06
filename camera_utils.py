@@ -244,7 +244,6 @@ def wait_for_camera_connection():
 """
 These functions below capture and save a picture from the connected camera and then show it.
 """
-
 def save_tethered_picture(save_directory, filename): # Save a picture from the connected camera
     """
     Captures and saves a picture from the connected camera using the 'gphoto2 --capture-tethered' command.

@@ -1,3 +1,15 @@
+"""
+This script is used for tethered shooting with a camera. It allows the user to connect a camera, choose a save directory, capture pictures, manage the session, and transfer the captured pictures.
+
+The script uses various modules such as camera_utils, app_utils, keyboard, time, tkinter, subprocess, os, sys, and json.
+
+The main menu provides options to start a capture session, configure the save folder settings, transfer captured pictures, view camera and system info, start a new session, reconnect the camera, disconnect the camera, and exit the script.
+
+The script also includes a picture viewer module for viewing and selecting pictures during the capture session.
+
+Note: Some parts of the code are commented out or marked as work in progress.
+
+"""
 #!/usr/bin/env python3
 from camera_utils import is_camera_connected, list_available_cameras, wait_for_camera_connection, save_tethered_picture, list_available_usb_ports, disconnect_camera, copy_confirm, show_camera_info, get_camera_abilities, get_connected_camera_model, get_connected_camera_serial_number, get_camera_firmware_version, get_camera_battery_level, get_camera_abilities, get_camera_free_space
 from app_utils import choose_save_directory, calculate_mb_left, wait_for_keypress, clear_terminal
@@ -9,7 +21,8 @@ import subprocess # Module for running shell commands
 import os # Module for interacting with the operating system
 import sys # Module for system-specific parameters and functions
 import json # Module for working with JSON data
-"""Menu layout prototype.
+"""
+Menu layout prototype.
     
     Menu:
 Connected Camera: „Nikon D750“
@@ -42,7 +55,7 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
  
 	8. Exit
 
-    """
+"""
 new_session_check = True # Set starting value of the new session check variable to True
 selected_pictures = [] # Define the "selected_pictures" variable as an empty list
 
@@ -67,6 +80,17 @@ while True: # Main menu loop
                 break
 
         class ConnectedCamera:
+            """
+            Represents a connected camera.
+
+            Attributes:
+                model (str): The model of the camera.
+                serial_number (str): The serial number of the camera.
+                firmware_version (str): The firmware version of the camera.
+                battery_level (float): The battery level of the camera.
+                remaining_storage (float): The remaining storage capacity of the camera.
+            """
+
             def __init__(self, model, serial_number, firmware_version, battery_level, remaining_storage):
                 self.model = model
                 self.serial_number = serial_number
@@ -431,6 +455,9 @@ while True: # Main menu loop
             destination_directory = None
             camera = {}
             new_session_check = True
+            if os.path.exists(save_directory + '/selected_pictures.json'):
+                os.remove(save_directory + '/selected_pictures.json')
+                print("selected_pictures.json file deleted.")
 
             time.sleep(2)  # Simulating delay before showing the main menu
             wait_for_keypress()
