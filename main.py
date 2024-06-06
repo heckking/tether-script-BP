@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from camera_utils import is_camera_connected, list_available_cameras, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera, copy_confirm, show_camera_info, get_camera_abilities, get_connected_camera_model, get_connected_camera_serial_number, get_camera_firmware_version, get_camera_battery_level, get_camera_abilities, get_camera_free_space
+from camera_utils import is_camera_connected, list_available_cameras, wait_for_camera_connection, save_tethered_picture, list_available_usb_ports, disconnect_camera, copy_confirm, show_camera_info, get_camera_abilities, get_connected_camera_model, get_connected_camera_serial_number, get_camera_firmware_version, get_camera_battery_level, get_camera_abilities, get_camera_free_space
 from app_utils import choose_save_directory, calculate_mb_left, wait_for_keypress, clear_terminal
 #import msvcrt   # Windows-specific module for keyboard input
 import keyboard # Cross-platform module for keyboard input
@@ -111,6 +111,7 @@ while True: # Main menu loop
                 if os.path.exists(save_directory + '/selected_pictures.json'):
                     os.remove(save_directory + '/selected_pictures.json')
                     print("selected_pictures.json file deleted.")
+                    selected_pictures = []
                 else:
                     print("selected_pictures.json file does not exist.")
             else:
@@ -126,6 +127,8 @@ while True: # Main menu loop
             time.sleep(2)  # Simulating delay before checking again
         print("Camera is connected.")
         time.sleep(2)  # Simulating delay before showing the main menu
+    
+    ConnectedCamera.model = get_connected_camera_model()
     
     clear_terminal()
     print("Menu:")
@@ -163,6 +166,9 @@ while True: # Main menu loop
             choice = input("Enter your choice (1-4): ")
             
             if choice == "1": # Start Capture
+                
+                wait_for_camera_connection()
+                
                 print("Save Folder: \033[94m{}\033[0m ({})".format(save_directory, calculate_mb_left(save_directory)))
                 time.sleep(1)  # Simulating delay before capturing picture
                 print("Starting capturing picture...")
@@ -172,8 +178,6 @@ while True: # Main menu loop
                 wait_for_keypress()
                 time.sleep(1)
                 
-                print(filename)
-                wait_for_keypress()
                 if filename == "":
                     command = ['gphoto2', '--capture-tethered', '--filename', os.path.join(save_directory, f"%f.%C")]
                 else:
@@ -195,7 +199,8 @@ while True: # Main menu loop
                 while True: # Picture transfer menu loop
                     copy_choice = input("Do you want to copy the captured pictures? (y/n): ")
                     if copy_choice.lower() == "y":
-                        print("Choose a destination directory to transfer the captured pictures.\n")
+                        clear_terminal()
+                        print("\033[94mChoose a destination directory to transfer the captured pictures.\n\033[0m")
                         wait_for_keypress()
                         destination_directory = choose_save_directory()  # Choose the destination directory
                         print("Destination directory:", destination_directory)
@@ -358,8 +363,10 @@ while True: # Main menu loop
                 continue
 
             while cancel == 0: # Check if the transfer is not cancelled
-                cancel = copy_confirm(save_directory, destination_directory, selected_pictures)               
-            if cancel == 1:
+                copy_confirm(save_directory, destination_directory, selected_pictures)      
+                break
+            
+            if cancel == 0:
                 break
             wait_for_keypress()
             

@@ -9,7 +9,7 @@ import re
 import time
 import numpy as np
 import rawpy
-import concurrent.futures # For threading
+import gphoto2 as gp
 
 def is_camera_connected(): # Check if a camera is connected
     """
@@ -231,6 +231,16 @@ def list_available_usb_ports(): # List the available USB ports
     except subprocess.CalledProcessError:
         print("Failed to list available USB ports.")
 
+def wait_for_camera_connection():
+    context = gp.Context()
+    while True:
+        cameras = gp.Camera.autodetect(context)
+        if cameras:
+            print("Camera connected.")
+            break
+        else:
+            print("Waiting for camera connection...")
+            time.sleep(1)
 """
 These functions below capture and save a picture from the connected camera and then show it.
 """

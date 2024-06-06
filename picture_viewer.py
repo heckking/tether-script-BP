@@ -1,9 +1,7 @@
 # Description: This script will show the latest picture taken in a window.
 import sys
 from camera_utils import show_latest_picture
-from app_utils import wait_for_keypress
 import json
-import os
 
 print("Showing the latest picture taken...")
 save_directory = sys.argv[1] # Get the save directory from the command line arguments
