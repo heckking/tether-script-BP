@@ -1,12 +1,9 @@
-import concurrent.futures
-import cv2
 from camera_utils import is_camera_connected, choose_save_directory, save_tethered_picture, copy_captured_pictures
 from app_utils import wait_for_keypress
 import subprocess
-import tempfile
 import json
 import os
-
+import gphoto2 as gp
 filename = 'testing'
 save_directory = choose_save_directory()
 selected_pictures = []
@@ -17,7 +14,7 @@ if os.path.exists(save_directory + '/selected_pictures.json'): #
     while response.lower() != 'y' and response.lower() != 'n':
         print("Invalid input. Please enter 'y' or 'n'.")
         response = input("Do you want to continue with the session? (y/n): ")
-    
+
     if response.lower() == 'n':
         os.remove(save_directory + '/selected_pictures.json')
     else:
@@ -26,6 +23,7 @@ if os.path.exists(save_directory + '/selected_pictures.json'): #
             print(selected_pictures)
 
 is_camera_connected()
+
 
 def get_camera_model():
     try:
@@ -54,11 +52,16 @@ print(get_camera_abilities())
 wait_for_keypress()
 
 p1 = subprocess.Popen(['python3', 'picture_viewer.py', save_directory, json.dumps(selected_pictures)])
+print("p1 is running...")
+p2 = subprocess.Popen(['python3', 'tether_program.py', save_directory, filename])
+print("p2 is running...")
 #p2 = subprocess.Popen(['python3', 'tether_program.py', save_directory, filename])
 
 p1.wait()
-
 print("p1 is done")
+p2.terminate()
+print("p2 is done")
+
 # Read selected_pictures.json and put them in the selected photos list
 with open(save_directory + '/selected_pictures.json', 'r') as f:
     selected_pictures = json.load(f)
@@ -72,7 +75,8 @@ destination_directory = choose_save_directory()
 selected_pictures = [os.path.basename(file) for file in selected_pictures]
 print(selected_pictures)
 wait_for_keypress()
-copy_captured_pictures(session_directory, destination_directory, selected_pictures)
+trf_all = False
+copy_captured_pictures(session_directory, destination_directory, selected_pictures, trf_all)
 #p2.send_signal(subprocess.signal.SIGINT)
 #p2.terminate()
 print("p2 is done")

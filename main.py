@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from camera_utils import is_camera_connected, list_available_cameras, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera, show_camera_info, get_camera_abilities, get_connected_camera_model, get_connected_camera_serial_number, get_camera_firmware_version, get_camera_battery_level, get_camera_abilities, get_camera_free_space
+from camera_utils import is_camera_connected, list_available_cameras, get_camera_info, save_tethered_picture, list_available_usb_ports, show_latest_picture, copy_captured_pictures, disconnect_camera, copy_confirm, show_camera_info, get_camera_abilities, get_connected_camera_model, get_connected_camera_serial_number, get_camera_firmware_version, get_camera_battery_level, get_camera_abilities, get_camera_free_space
 from app_utils import choose_save_directory, calculate_mb_left, wait_for_keypress, clear_terminal
 #import msvcrt   # Windows-specific module for keyboard input
 import keyboard # Cross-platform module for keyboard input
@@ -81,7 +81,6 @@ while True: # Main menu loop
         ConnectedCamera.battery_level = get_camera_battery_level()
         ConnectedCamera.remaining_storage = get_camera_free_space()
         """         
-        wait_for_keypress()
         camera_model = ConnectedCamera.model
         """
         serial_number = ConnectedCamera.serial_number
@@ -89,28 +88,36 @@ while True: # Main menu loop
         battery_level = ConnectedCamera.battery_level
         remaining_storage = ConnectedCamera.remaining_storage
         """
-        
-        filename = camera_model.replace(" ", "_")
-        
-    if os.path.exists(save_directory + '/selected_pictures.json'): # Check if there is an active session in the folder
-        print("Warning: There is still an active session in this folder.")
-        response = input("Do you want to continue with the session? (y/n): ")
-        while response.lower() != 'y' and response.lower() != 'n':
-            print("Invalid input. Please enter 'y' or 'n'.")
-            response = input("Do you want to continue with the session? (y/n): ")
-        
-        if response.lower() == 'n':
-            # Delete the selected_pictures.json file
-            if os.path.exists(save_directory + '/selected_pictures.json'):
-                os.remove(save_directory + '/selected_pictures.json')
-                print("selected_pictures.json file deleted.")
-            else:
-                print("selected_pictures.json file does not exist.")
+        if camera_model:
+            filename = camera_model.replace(" ", "_")
         else:
+            filename = "picture"
+        
+        if os.path.exists(save_directory + '/selected_pictures.json'):
             with open(save_directory + '/selected_pictures.json', 'r') as f:
                 selected_pictures = json.load(f)
-                print(selected_pictures)
-    wait_for_keypress()
+                if selected_pictures == 0 or selected_pictures is None:
+                    os.remove(save_directory + '/selected_pictures.json')
+        
+        if os.path.exists(save_directory + '/selected_pictures.json'): # Check if there is an active session in the folder
+            print("\033[93mWarning: There is still an active session in this folder.\033[0m")
+            response = input("Do you want to continue with the session? (y/n): ")
+            while response.lower() != 'y' and response.lower() != 'n':
+                print("Invalid input. Please enter 'y' or 'n'.")
+                response = input("Do you want to continue with the session? (y/n): ")
+            
+            if response.lower() == 'n':
+                # Delete the selected_pictures.json file
+                if os.path.exists(save_directory + '/selected_pictures.json'):
+                    os.remove(save_directory + '/selected_pictures.json')
+                    print("selected_pictures.json file deleted.")
+                else:
+                    print("selected_pictures.json file does not exist.")
+            else:
+                with open(save_directory + '/selected_pictures.json', 'r') as f:
+                    selected_pictures = json.load(f)
+                    print(selected_pictures)
+            wait_for_keypress()
     
     if not is_camera_connected():
         print("Camera is disconnected.")
@@ -161,20 +168,35 @@ while True: # Main menu loop
                 print("Starting capturing picture...")
                 time.sleep(1)  # Simulating delay before capturing picture
                 clear_terminal()
-                print('Press Esc key to exit the viewer.\nUse the arrow keys to navigate the pictures.\n\nPress Left arrow key to go back.\nPress Right arrow key to go forward.\n')
+                print('Press Esc key to exit the viewer.\nUse "A" and "D" keys to navigate the pictures.\n\nPress (A) key to go back.\nPress (D) key to go forward.\n\nPress spacebar to select and deselect the picture.\n')
                 wait_for_keypress()
                 time.sleep(1)
                 
-                p1 = subprocess.Popen(['python3', 'picture_viewer.py', save_directory, json.dumps(selected_pictures)])
-                p2 = subprocess.Popen(['python3', 'tether_program.py', save_directory, filename])
-                selected_pictures = [os.path.basename(file) for file in selected_pictures]
+                print(filename)
+                wait_for_keypress()
+                if filename == "":
+                    command = ['gphoto2', '--capture-tethered', '--filename', os.path.join(save_directory, f"%f.%C")]
+                else:
+                    command = ['gphoto2', '--capture-tethered', '--filename', os.path.join(save_directory, f"{filename}-%f.%C")]
                 
+                p1 = subprocess.Popen(['python3', 'picture_viewer.py', save_directory, json.dumps(selected_pictures)])
+                p2 = subprocess.Popen(command)
+
                 p1.wait()
-                p2.wait()
+                p2.terminate()
+                clear_terminal()
+                
+                with open(save_directory + '/selected_pictures.json', 'r', encoding='utf-8') as f:
+                    selected_pictures = json.load(f)
+                    #selected_pictures = [os.path.basename(file) for file in selected_pictures]
+                print(selected_pictures)
+                wait_for_keypress()
                 
                 while True: # Picture transfer menu loop
                     copy_choice = input("Do you want to copy the captured pictures? (y/n): ")
                     if copy_choice.lower() == "y":
+                        print("Choose a destination directory to transfer the captured pictures.\n")
+                        wait_for_keypress()
                         destination_directory = choose_save_directory()  # Choose the destination directory
                         print("Destination directory:", destination_directory)
                         time.sleep(1)  # Simulating delay before copying the pictures
@@ -182,52 +204,23 @@ while True: # Main menu loop
                         if not destination_directory:  # Check if a destination directory is chosen
                             clear_terminal()
                             print("No destination directory chosen. Transfer cancelled.")
+                            break
                         elif not save_directory:  # Check if a save directory is chosen
                             clear_terminal()
                             print("No save directory chosen. Transfer cancelled.")
+                            break
                         elif save_directory == destination_directory:  # Check if the save and destination directories are the same
                             print("Save and destination directories are the same.")
                             print("Please choose a different destination directory.")
+                            break
                         else:
-                            while True: # Check if the transfer is not cancelled
-                                clear_terminal()
-                                print("1. Copy all captured pictures")
-                                print("2. Copy selected pictures")
-                                print("3. Show list of selected pictures")
-                                print("4. Cancel")
-                                trf_all = None
-                                transfer_choice = input("Enter your choice (1-4): ")
-
-                                if transfer_choice == "1": # Copy all captured pictures
-                                    print("Copying all captured pictures to the destination directory...")
-                                    trf_all = True
-                                    copy_captured_pictures(save_directory, destination_directory, selected_pictures, trf_all) # Copy all captured pictures to the destination directory
-                                    print("\nPicture copy done.\n")
-                                    break
-
-                                elif transfer_choice == "2": # Copy selected pictures
-                                    print("Copying selected pictures to the destination directory...")
-                                    trf_all = False
-                                    copy_captured_pictures(save_directory, destination_directory, selected_pictures, trf_all) # Copy selected pictures to the destination directory
-                                    print("\nPicture copy done.\n")
-                                    break
-
-                                elif transfer_choice == "3": # Show list of selected pictures
-                                    print("Selected pictures:")
-                                    for picture in selected_pictures:
-                                        print(picture)
-                                    wait_for_keypress()
-
-                                elif transfer_choice == "4": # Go back
-                                    print("Picture transfer cancelled.")
-                                    wait_for_keypress()
-                                    break
-
-                                else:
-                                    print("\033[91mInvalid choice. Please try again.\033[0m")
-                                    time.sleep(1)  # Simulating delay before showing the menu again
+                            copy_confirm(save_directory, destination_directory, selected_pictures)
+                            break
+                            
                     elif copy_choice.lower() == "n":
                         print("Picture copy cancelled.")
+                        wait_for_keypress()
+                        break
                     else:
                         print("Invalid choice. Please try again.")
         
@@ -253,8 +246,18 @@ while True: # Main menu loop
                     wait_for_keypress()
                     
             elif choice == "3": # View pictures
+                
+                clear_terminal()
+                print('Press Esc key to exit the viewer.\nUse "A" and "D" keys to navigate the pictures.\n\nPress (A) key to go back.\nPress (D) key to go forward.\n\nPress spacebar to select and deselect the picture.\n')
+                wait_for_keypress()
+                time.sleep(1)
+                
                 p1 = subprocess.Popen(['python3', 'picture_viewer.py', save_directory, json.dumps(selected_pictures)])
                 p1.wait()
+                with open(save_directory + '/selected_pictures.json', 'r', encoding='utf-8') as f:
+                    selected_pictures = json.load(f)
+                    
+                #clear_terminal()
                 wait_for_keypress()
             
             elif choice == "4": # Go back
@@ -297,17 +300,27 @@ while True: # Main menu loop
                 wait_for_keypress()
                 
             elif choice == "3": # Filename change
+                previous_filename = filename
                 while True: # Filename change menu loop
                     clear_terminal()
-                    print("Current filename:", filename)
+                    print("Current filename:", previous_filename)
                     filename = input("Enter the custom filename: ")
                     if not filename or filename.strip() == "":
                         print("Invalid filename. Please enter a valid filename.")
+                        filename = previous_filename
+                        time.sleep(1)  # Simulating delay before showing the menu again
+                    elif any(char in filename for char in ['/', '\\', ':', '*', '?', '"', '<', '>', '|']):
+                        print("Invalid filename. The following characters are not allowed: / \\ : * ? \" < > |")
+                        filename = previous_filename
+                        time.sleep(1)  # Simulating delay before showing the menu again
+                    else:
+                        # Continue with the rest of the code
+                        print("Filename changed to:", filename)
+                        previous_filename = filename
                         time.sleep(0.5)  # Simulating delay before showing the menu again
-                        wait_for_keypress()
-                        continue
+                        break
                     print("Filename changed to:", filename)
-                    break
+                    previous_filename = filename
                 time.sleep(0.5)  # Simulating delay before showing the menu again
                 wait_for_keypress()
                 
@@ -345,39 +358,9 @@ while True: # Main menu loop
                 continue
 
             while cancel == 0: # Check if the transfer is not cancelled
-                print("1. Copy all captured pictures")
-                print("2. Copy selected pictures")
-                print("3. Show list of selected pictures")
-                print("4. Go back")
-                trf_all = None
-                transfer_choice = input("Enter your choice (1-3): ")
-
-                if transfer_choice == "1": # Copy all captured pictures
-                    print("Copying all captured pictures to the destination directory...")
-                    trf_all = True
-                    copy_captured_pictures(save_directory, destination_directory, selected_pictures, trf_all) # Copy all captured pictures to the destination directory
-                    print("\nPicture copy done.\n")
-
-                elif transfer_choice == "2": # Copy selected pictures
-                    print("Copying selected pictures to the destination directory...")
-                    trf_all = False
-                    copy_captured_pictures(save_directory, destination_directory, selected_pictures, trf_all) # Copy selected pictures to the destination directory
-                    print("\nPicture copy done.\n")
-
-                elif transfer_choice == "3": # Show list of selected pictures
-                    if not selected_pictures:
-                        print("Selected pictures list is empty.")
-                    else:
-                        print("Selected pictures:")
-                        for picture in selected_pictures:
-                            print(picture)
-
-                elif transfer_choice == "4": # Go back
-                    break # Exit the loop if all checks passed
-                else:
-                    print("\033[91mInvalid choice. Please try again.\033[0m")
-                    time.sleep(1)  # Simulating delay before showing the menu again
-                    
+                cancel = copy_confirm(save_directory, destination_directory, selected_pictures)               
+            if cancel == 1:
+                break
             wait_for_keypress()
             
     elif choice == "4": # Camera info (work in progress)
@@ -477,3 +460,10 @@ while True: # Main menu loop
         time.sleep(1) # Simulating delay before showing the menu again
  
 print("Exiting camera application.")
+if os.path.exists(save_directory + '/selected_pictures.json'):
+    if selected_pictures == 0 or selected_pictures is None or selected_pictures == [] or selected_pictures == "[]" or selected_pictures == "":
+        os.remove(save_directory + '/selected_pictures.json')
+
+
+#TO DO:
+# Look on line 301

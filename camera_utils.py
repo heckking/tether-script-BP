@@ -235,50 +235,60 @@ def list_available_usb_ports(): # List the available USB ports
 These functions below capture and save a picture from the connected camera and then show it.
 """
 
-def save_tethered_picture(save_directory): # Save a picture from the connected camera
+def save_tethered_picture(save_directory, filename): # Save a picture from the connected camera
     """
     Captures and saves a picture from the connected camera using the 'gphoto2 --capture-tethered' command.
     Returns True if successful, otherwise returns False.
     """
+    command = ['gphoto2', '--capture-tethered', '--filename', os.path.join(save_directory, f"%f.%C")]
+
+    print("Capturing and saving a picture...")
+    wait_for_keypress()
+    subprocess.run(command)
+    wait_for_keypress()
+    subprocess.run(['gphoto2', '--capture-tethered', '--filename', os.path.join(save_directory, f"%f.%C")], shell=True)
     try:
-        subprocess.check_output(['gphoto2','--capture-tethered', '--filename', os.path.join(save_directory, '%f.%C')])
+        if filename is None:
+            subprocess.run(['gphoto2', '--capture-tethered', '--filename', os.path.join(save_directory, f"%f.%C")], shell=True)
+        else:
+            subprocess.run(['gphoto2', '--capture-tethered', '--filename', os.path.join(save_directory, f"{filename}-%f.%C")], shell=True)
         return True
     except subprocess.CalledProcessError:
         return False
-           
+
 def capture_and_save_picture(save_directory, filename, camera_model): # Capture and save a picture
-            """
-            Captures and saves a picture from the connected camera into the chosen directory.
-            """
-            # Check if a camera is connected
-            if not is_camera_connected():
-                print("No camera connected.")
-                return
+        """
+        Captures and saves a picture from the connected camera into the chosen directory.
+        """
+        # Check if a camera is connected
+        if not is_camera_connected():
+            print("No camera connected.")
+            return
 
-            # Check if the save directory exists
-            if not os.path.exists(save_directory):
-                print("Save directory does not exist.")
-                return
+        # Check if the save directory exists
+        if not os.path.exists(save_directory):
+            print("Save directory does not exist.")
+            return
 
-            # Check if the save directory is writable
-            if not os.access(save_directory, os.W_OK):
-                print("Save directory is not writable.")
-                return
+        # Check if the save directory is writable
+        if not os.access(save_directory, os.W_OK):
+            print("Save directory is not writable.")
+            return
 
-            # Generate a unique file name for the captured picture
-            timestamp = time.strftime("%Y%m%d-%H%M%S")
-            if not filename:
-                filename = camera_model
-            file_extension = os.path.splitext(filename)[1]
-            file_name = f"{timestamp}{file_extension}"
-            save_path = os.path.join(save_directory, file_name)
+        # Generate a unique file name for the captured picture
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        if not filename:
+            filename = camera_model
+        file_extension = os.path.splitext(filename)[1]
+        file_name = f"{timestamp}{file_extension}"
+        save_path = os.path.join(save_directory, file_name)
 
-            # Capture and save the picture
-            if save_tethered_picture(save_path, file_name, save_directory):
-                print("Picture captured and saved successfully.")
-            else:
-                print("Failed to capture and save the picture.")
-        
+        # Capture and save the picture
+        if save_tethered_picture(save_path, file_name, save_directory):
+            print("Picture captured and saved successfully.")
+        else:
+            print("Failed to capture and save the picture.")
+
 def show_latest_picture(save_directory, selected_pictures): # Show the latest picture taken in window
     """
     Shows the latest taken picture continuously with the given save directory.
@@ -292,8 +302,8 @@ def show_latest_picture(save_directory, selected_pictures): # Show the latest pi
     newest_image = None
     prev_image = None
     selected_photos = []
-    
-    if selected_pictures is not None:
+
+    if selected_pictures is not None or selected_pictures != [] or selected_pictures != "0" or selected_pictures != "" or selected_pictures != "[]" or selected_pictures != "None":
         selected_photos.extend(selected_pictures)
         
     tag_preview = False
@@ -328,8 +338,7 @@ def show_latest_picture(save_directory, selected_pictures): # Show the latest pi
             latest_file_path = os.path.join(save_directory, images[index])
             if latest_image != latest_file_path: # Check if the latest image is different from the previous latest image
                 latest_image = latest_file_path
-
-            print("Latest image path:", latest_image)
+                print("Latest image path:", latest_image)
                 
             """
             if latest_file_path != latest_image:
@@ -411,7 +420,7 @@ def show_latest_picture(save_directory, selected_pictures): # Show the latest pi
         else:
             print("No photos found in the specified directory.")
             time.sleep(2)
-            
+
 def copy_captured_pictures(session_directory, destination_directory, selected_pictures, trf_all): # Copy the captured pictures
     """
     Copies all captured pictures in the session directory to the desired destination directory.
@@ -491,6 +500,47 @@ def copy_captured_pictures(session_directory, destination_directory, selected_pi
     else:
         print(f"Failed to copy {num_errors} photo files.")
 
+def copy_confirm(save_directory, destination_directory, selected_pictures):
+    while True: # Check if the transfer is not cancelled
+        clear_terminal()
+        print("1. Copy all captured pictures")
+        print("2. Copy all selected pictures")
+        print("3. Show list of selected pictures")
+        print("4. Cancel")
+        trf_all = None
+        transfer_choice = input("Enter your choice (1-4): ")
+
+        if transfer_choice == "1": # Copy all captured pictures
+            print("Copying all captured pictures to the destination directory...")
+            trf_all = True
+            copy_captured_pictures(save_directory, destination_directory, selected_pictures, trf_all) # Copy all captured pictures to the destination directory
+            print("\nPicture copy done.\n")
+            break
+
+        elif transfer_choice == "2": # Copy only selected pictures
+            print("Copying selected pictures to the destination directory...")
+            trf_all = False
+            copy_captured_pictures(save_directory, destination_directory, selected_pictures, trf_all) # Copy selected pictures to the destination directory
+            print("\nPicture copy done.\n")
+            break
+
+        elif transfer_choice == "3": # Show list of selected pictures
+            print("Selected pictures:")
+            if not selected_pictures:
+                print("No selected pictures.")
+            else:
+                for picture in selected_pictures:
+                    print(picture)
+            wait_for_keypress()
+
+        elif transfer_choice == "4": # Go back
+            print("Picture transfer cancelled.")
+            wait_for_keypress()
+            return 0
+
+        else:
+            print("\033[91mInvalid choice. Please try again.\033[0m")
+            time.sleep(1)  # Simulating delay before showing the menu again
 #TO DO list
 # continuous photo viewer add some kind of exit option xxx
 # add a way that the user is warnend if the copied file already exists x
@@ -498,5 +548,3 @@ def copy_captured_pictures(session_directory, destination_directory, selected_pi
 # add a way that warns the user if the copied session folder memory is too much memory for the destination folder and ask they want to proceed
 # add a way to save the photos x
 # repair photo viewer border x
-
-
