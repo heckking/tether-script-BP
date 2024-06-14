@@ -312,7 +312,7 @@ def wait_for_camera_connection():
         else:
             clear_terminal()
             timer -= 1
-            print(f"Waiting for camera connection... {timer} seconds remaining...")
+            print(f"Waiting for camera connection... \n{timer} seconds remaining...")
             if timer == 0:
                 clear_terminal()
                 print("\033[1;31mTimeout: No camera detected.\033[0m")

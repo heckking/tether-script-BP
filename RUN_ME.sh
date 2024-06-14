@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Change the working directory to the directory of the script
+cd "$(dirname "$0")"
+
 # Update the package manager and install Python 3 if it is not already installed
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     apt-get update
@@ -18,7 +21,7 @@ if [ ! -d "python_env" ]; then
 fi
 
 # Activate the virtual environment
-source /python_venv/bin/activate
+source "$(dirname "$0")/python_env/bin/activate"
 
 # Install the required Python packages if they are not already installed
 if ! python3 -m pip show -r knihovny.txt &> /dev/null; then
@@ -27,3 +30,5 @@ fi
 # Run the program with sudo
 sudo python3 main.py
 
+# Deactivate the virtual environment
+deactivate

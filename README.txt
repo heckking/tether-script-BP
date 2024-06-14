@@ -3,6 +3,7 @@ It creates a virtual enviroment and access it.
 Then it installs necessery libraries or the latest version of Python3
 
 If its not possible to install the libraries install them manually.
+to delete the virtual enviroment use command source "rm -rf python_env"
 
 
 # main.py
