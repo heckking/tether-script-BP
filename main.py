@@ -12,7 +12,7 @@ Note: Some parts of the code are commented out or marked as work in progress.
 """
 #!/usr/bin/env python3
 from camera_utils import is_camera_connected, list_available_cameras, wait_for_camera_connection, save_tethered_picture, list_available_usb_ports, disconnect_camera, copy_confirm, show_camera_info, get_camera_abilities, get_connected_camera_model, get_connected_camera_serial_number, get_camera_firmware_version, get_camera_battery_level, get_camera_abilities, get_camera_free_space
-from app_utils import choose_save_directory, calculate_mb_left, wait_for_keypress, clear_terminal
+from app_utils import choose_save_directory, calculate_mb_left, wait_for_keypress, clear_terminal, change_save_directory
 #import msvcrt   # Windows-specific module for keyboard input
 import keyboard # Cross-platform module for keyboard input
 import time # Module for time-related functions
@@ -179,7 +179,7 @@ while True: # Main menu loop
     """    
     clear_terminal()
     print("Menu:")
-    if is_camera_connected():
+    if not ConnectedCamera.model == None:
         print("\033[92mCamera is connected.\033[0m")
     else:
         print("\033[91mNo camera is connected.\033[0m")
@@ -303,7 +303,10 @@ while True: # Main menu loop
                 """
                 this part of the code allows the user to change the save folder. If the user chooses to change the save folder, the program will ask the user to choose a new save directory.
                 
-                """                
+                """
+                save_directory, selected_pictures = change_save_directory(save_directory, selected_pictures)
+                                
+                """
                 choice_folder = input("Do you want to change the save folder? (y/n): ")
                 if choice_folder.lower() == "y":
                     new_save_directory = choose_save_directory()
@@ -323,7 +326,7 @@ while True: # Main menu loop
                     print("Save directory remains: \033[94m{}\033[0m".format(save_directory))
                     print("Remaining storage:", calculate_mb_left(save_directory))
                     wait_for_keypress()
-                    
+                """                      
             elif choice == "3": # View pictures
                 """
                 this part of the code allows the user to view the pictures taken during the session. 
@@ -391,14 +394,9 @@ while True: # Main menu loop
             elif choice == "2": # Choose save folder
                 """
                 changes the save folder. If the user chooses to change the save folder, the program will ask the user to choose a new save directory.
-                """                
-                clear_terminal()
-                print("Please choose a save directory.")
-                time.sleep(2)  # Simulating delay before choosing the save directory
-                save_directory = choose_save_directory()
-                print("Save directory: \033[94m{}\033[0m".format(save_directory))
-                time.sleep(2)  # Simulating delay before showing the menu again
-                wait_for_keypress()
+                """        
+                save_directory, selected_pictures = change_save_directory(save_directory, selected_pictures)   
+            
                 
             elif choice == "3": # Filename change
                 """
