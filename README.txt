@@ -1,9 +1,9 @@
+Run first the RUN_ME.sh
+It creates a virtual enviroment and access it.
+Then it installs necessery libraries or the latest version of Python3
 
-Run first the run_me.sh 
-It runs the program and installs necessery libraries
+If its not possible to install the libraries install them manually.
 
-If its not possible install manually.
-need to run main.py in sudo to access full functionality
 
 # main.py
 
