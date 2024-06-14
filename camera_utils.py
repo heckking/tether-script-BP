@@ -295,19 +295,29 @@ def wait_for_camera_connection():
     Waits for a camera connection.
 
     This function continuously checks for the presence of a camera by using the `autodetect` method from the `gp.Camera` class.
-    It waits until a camera is detected and then breaks out of the loop.
+    It waits until a camera is detected and then breaks out of the loop or until a timeout occurs.
 
     Returns:
         None
     """
     context = gp.Context()
+    timer = 21 
     while True:
         cameras = gp.Camera.autodetect(context)
         if cameras:
-            print("Camera connected.")
-            break
+            clear_terminal()
+            print("\033[1;32mCamera connected successfully.\033[0m")
+            time.sleep(2)
+            return True
         else:
-            print("Waiting for camera connection...")
+            clear_terminal()
+            timer -= 1
+            print(f"Waiting for camera connection... {timer} seconds remaining...")
+            if timer == 0:
+                clear_terminal()
+                print("\033[1;31mTimeout: No camera detected.\033[0m")
+                time.sleep(2)
+                return False
             time.sleep(1)
 """
 These functions below capture and save a picture from the connected camera and then show it.

@@ -14,13 +14,17 @@ Note: Some parts of the code are commented out or marked as work in progress.
 from camera_utils import is_camera_connected, list_available_cameras, wait_for_camera_connection, save_tethered_picture, list_available_usb_ports, disconnect_camera, copy_confirm, show_camera_info, get_camera_abilities, get_connected_camera_model, get_connected_camera_serial_number, get_camera_firmware_version, get_camera_battery_level, get_camera_abilities, get_camera_free_space
 from app_utils import choose_save_directory, calculate_mb_left, wait_for_keypress, clear_terminal, change_save_directory
 #import msvcrt   # Windows-specific module for keyboard input
-import keyboard # Cross-platform module for keyboard input
 import time # Module for time-related functions
 import tkinter as tk # Cross-platform module for GUI
 import subprocess # Module for running shell commands
 import os # Module for interacting with the operating system
 import sys # Module for system-specific parameters and functions
 import json # Module for working with JSON data
+
+try:
+    import keyboard
+except ModuleNotFoundError:
+    keyboard = None
 """
 Menu layout prototype.
     
@@ -216,8 +220,12 @@ while True: # Main menu loop
             """            
             if choice == "1": # Start Capture
                 
-                wait_for_camera_connection()
+                timeout = wait_for_camera_connection()
+                if timeout == False:
+                    continue
                 
+                clear_terminal()
+                print("Connected Camera:", ConnectedCamera.model)
                 print("Save Folder: \033[94m{}\033[0m ({})".format(save_directory, calculate_mb_left(save_directory)))
                 time.sleep(1)  # Simulating delay before capturing picture
                 print("Starting capturing picture...")

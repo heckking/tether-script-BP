@@ -2,9 +2,13 @@ import tkinter as tk
 from tkinter import filedialog
 import subprocess
 import os
-import keyboard
 import time
 import json
+
+try:
+    import keyboard
+except ModuleNotFoundError:
+    keyboard = None
 
 def choose_save_directory():
     """

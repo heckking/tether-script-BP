@@ -1,4 +1,3 @@
 gphoto2
-libgphoto2
-cv2
+opencv-python
 rawpy
