@@ -32,3 +32,6 @@ sudo python3 main.py
 
 # Deactivate the virtual environment
 deactivate
+
+# Exit the script
+exit
