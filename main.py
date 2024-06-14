@@ -63,6 +63,10 @@ selected_pictures = [] # Define the "selected_pictures" variable as an empty lis
 wait_for_keypress()
 
 while True: # Main menu loop
+    """
+    this if statement is used to check if a new session is started and initialize the variables.
+    
+    """    
     if new_session_check: # Check if a new session is started and initialize the variables
         is_camera_connected()
         clear_terminal()
@@ -100,6 +104,7 @@ while True: # Main menu loop
 
         ConnectedCamera.model = get_connected_camera_model()        
         """
+        prototype of getting camera info
         ConnectedCamera.serial_number = get_connected_camera_serial_number()
         ConnectedCamera.firmware_version = get_camera_firmware_version()
         ConnectedCamera.battery_level = get_camera_battery_level()
@@ -107,16 +112,24 @@ while True: # Main menu loop
         """         
         camera_model = ConnectedCamera.model
         """
+        prototype of getting camera info
         serial_number = ConnectedCamera.serial_number
         firmware_version = ConnectedCamera.firmware_version
         battery_level = ConnectedCamera.battery_level
         remaining_storage = ConnectedCamera.remaining_storage
         """
+
+        """
+        makes the filename from the camera model.
+        """        
         if camera_model:
             filename = camera_model.replace(" ", "_")
         else:
             filename = "picture"
         
+        """
+        checks if the selected_pictures.json file exists and if it does, it will load the selected pictures.
+        """        
         if os.path.exists(save_directory + '/selected_pictures.json'):
             with open(save_directory + '/selected_pictures.json', 'r') as f:
                 selected_pictures = json.load(f)
@@ -130,6 +143,10 @@ while True: # Main menu loop
                 print("Invalid input. Please enter 'y' or 'n'.")
                 response = input("Do you want to continue with the session? (y/n): ")
             
+            """
+            if the response is 'n', the selected_pictures.json file will be deleted. If the file does not exist, it will print that the file does not exist. 
+            If the response is 'y', the selected_pictures.json file will be loaded.
+            """            
             if response.lower() == 'n':
                 # Delete the selected_pictures.json file
                 if os.path.exists(save_directory + '/selected_pictures.json'):
@@ -144,6 +161,9 @@ while True: # Main menu loop
                     print(selected_pictures)
             wait_for_keypress()
     
+    """
+    checks if the camera is connected and if it is not, it will print that the camera is disconnected and wait for the camera to be connected.
+    """    
     if not is_camera_connected():
         print("Camera is disconnected.")
         print("Please connect the camera.")
@@ -154,6 +174,9 @@ while True: # Main menu loop
     
     ConnectedCamera.model = get_connected_camera_model()
     
+    """
+    main menu layout.
+    """    
     clear_terminal()
     print("Menu:")
     if is_camera_connected():
@@ -172,23 +195,25 @@ while True: # Main menu loop
     print("6. Reconnect camera")
     print("7. Disconnect camera")
     print("8. Exit")
-
+    """
+    Following input is used to choose the menu option.
+    """
     choice = input("Enter your choice (1-8): ")
 
     if choice == "1": # Start Capture
-        #print("Connected Camera:", camera["model"])
-        #print("Save Folder:", save_directory, "(", calculate_mb_left(save_directory), ")")
         while True:
             clear_terminal()
             print("Connected Camera:", ConnectedCamera.model)
-            print("Save Folder: \033[94m{}\033[0m ({})".format(save_directory, calculate_mb_left(save_directory)))
+            print("Save Folder: \033[94m{}\033[0m ({})".format(save_directory, calculate_mb_left(save_directory))) # Show the save folder and remaining storage
             print("1. Start Capture session")
             print("2. Change the save folder")
             print("3. View pictures")
             print("4. Go back")
         
             choice = input("Enter your choice (1-4): ")
-            
+            """
+            Main function for this program. It allows the user to start a capture session, change the save folder, view pictures, and go back to the main menu.
+            """            
             if choice == "1": # Start Capture
                 
                 wait_for_camera_connection()
@@ -202,24 +227,44 @@ while True: # Main menu loop
                 wait_for_keypress()
                 time.sleep(1)
                 
+                """
+                checks if the filename is empty and if it is, it will use the default filename from the camera.
+                command is a list of commands that will be executed in the subprocess.
+                """                
                 if filename == "":
                     command = ['gphoto2', '--capture-tethered', '--filename', os.path.join(save_directory, f"%f.%C")]
                 else:
                     command = ['gphoto2', '--capture-tethered', '--filename', os.path.join(save_directory, f"{filename}-%f.%C")]
                 
+                """
+                commands are executed in the subprocess.
+                p1 is the picture viewer and p2 is the command that captures the picture.
+                
+                """                
                 p1 = subprocess.Popen(['python3', 'picture_viewer.py', save_directory, json.dumps(selected_pictures)])
                 p2 = subprocess.Popen(command)
 
+                """
+                p2 is being terminated after p1 is done.
+                """                
                 p1.wait()
                 p2.terminate()
                 clear_terminal()
                 
+                """
+                loads the selected_pictures.json file into the selected_pictures variable.
+                """                
                 with open(save_directory + '/selected_pictures.json', 'r', encoding='utf-8') as f:
                     selected_pictures = json.load(f)
                     #selected_pictures = [os.path.basename(file) for file in selected_pictures]
                 print(selected_pictures)
                 wait_for_keypress()
                 
+                """
+                after the pictures are taken, the user can choose to copy the picture to the destination directory.
+                if the user chooses to copy the picture, the user can choose the destination directory.
+                if the user chooses not to copy the picture, the program will print that the picture copy is cancelled.
+                """                
                 while True: # Picture transfer menu loop
                     copy_choice = input("Do you want to copy the captured pictures? (y/n): ")
                     if copy_choice.lower() == "y":
@@ -252,8 +297,13 @@ while True: # Main menu loop
                         break
                     else:
                         print("Invalid choice. Please try again.")
-        
+                        time.sleep(1)  # Simulating delay before showing the menu again
+
             elif choice == "2": # Change the save folder
+                """
+                this part of the code allows the user to change the save folder. If the user chooses to change the save folder, the program will ask the user to choose a new save directory.
+                
+                """                
                 choice_folder = input("Do you want to change the save folder? (y/n): ")
                 if choice_folder.lower() == "y":
                     new_save_directory = choose_save_directory()
@@ -275,21 +325,37 @@ while True: # Main menu loop
                     wait_for_keypress()
                     
             elif choice == "3": # View pictures
+                """
+                this part of the code allows the user to view the pictures taken during the session. 
+                If the user chooses to view the pictures, the program will show the latest picture taken in a window.
+                selected_pictures.json file is loaded into the selected_pictures variable ad
+                """                
                 
                 clear_terminal()
+                """
+                instructions are shown for the user on how to navigate the picture viewer.
+                """                
                 print('Press Esc key to exit the viewer.\nUse "A" and "D" keys to navigate the pictures.\n\nPress (A) key to go back.\nPress (D) key to go forward.\n\nPress spacebar to select and deselect the picture.\n')
                 wait_for_keypress()
                 time.sleep(1)
                 
                 p1 = subprocess.Popen(['python3', 'picture_viewer.py', save_directory, json.dumps(selected_pictures)])
                 p1.wait()
+                """
+                after selecting pictures in the picture viewer 
+                selected_pictures.json file is loaded into the selected_pictures variable. 
+                """                
                 with open(save_directory + '/selected_pictures.json', 'r', encoding='utf-8') as f:
                     selected_pictures = json.load(f)
                     
                 #clear_terminal()
                 wait_for_keypress()
             
+            
             elif choice == "4": # Go back
+                """
+                option to go back to the main menu.
+                """                
                 break
             else:
                 print("\033[91mInvalid choice. Please try again.\033[0m")
@@ -308,7 +374,10 @@ while True: # Main menu loop
             choice = input("Enter your choice (1-4): ")
             
             if choice == "1": # Open save folder
-                #subprocess.Popen(["explorer", save_directory])
+                """
+                opens the save folder in the file explorer using the subprocess module. It uses the os.devnull to suppress the output of the command.
+                it checks the platform and uses the appropriate command to open the file explorer.
+                """                
                 with open(os.devnull, 'w') as devnull: # Suppressing the output of the command
                     try:
                         if sys.platform == "darwin": # Mac
@@ -320,6 +389,9 @@ while True: # Main menu loop
                 wait_for_keypress()
                 
             elif choice == "2": # Choose save folder
+                """
+                changes the save folder. If the user chooses to change the save folder, the program will ask the user to choose a new save directory.
+                """                
                 clear_terminal()
                 print("Please choose a save directory.")
                 time.sleep(2)  # Simulating delay before choosing the save directory
@@ -329,6 +401,12 @@ while True: # Main menu loop
                 wait_for_keypress()
                 
             elif choice == "3": # Filename change
+                """
+                filename change menu. If the user chooses to change the filename, the program will ask the user to enter a custom filename.
+                it checks if the filename is empty and if it is, it will use the default filename from the camera.
+                there is a check for invalid characters in the filename.
+                if the filename is invalid, the program will print an error message and ask the user to enter a valid filename.
+                """                
                 previous_filename = filename
                 while True: # Filename change menu loop
                     clear_terminal()
@@ -360,6 +438,11 @@ while True: # Main menu loop
                 time.sleep(1)  # Simulating delay before showing the menu again
                 
     elif choice == "3": # Transfer captured pictures in this session
+        """
+        transfer captured pictures menu. 
+        If the user chooses to transfer the captured pictures, the program will ask the user to choose the destination directory.
+        depending on the user's choice, the program will either copy the pictures to the destination directory or print that the transfer is cancelled.
+        """        
         clear_terminal()
         cancel = 0
         print("Choose a destination directory to transfer the captured pictures.\n")
@@ -395,6 +478,10 @@ while True: # Main menu loop
             wait_for_keypress()
             
     elif choice == "4": # Camera info (work in progress)
+        """
+        shows the camera and system info.
+        is in the work in progress state. some functions are commented out.
+        """        
         while True: # Camera info menu loop
             clear_terminal()                
             print("Connected Camera:", ConnectedCamera.model)
@@ -444,6 +531,10 @@ while True: # Main menu loop
                 time.sleep(1)  # Simulating delay before showing the menu again
             
     elif choice == "5": # Start new session
+        """
+        starts a new session. If the user chooses to start a new session, the program will ask the user to confirm the new session.
+        if the user confirms the new session, the program will start a new session, meaning that the selected_pictures.json file will be deleted and the variables will be initialized.
+        """        
         clear_terminal()
         confirm = input("Are you sure you want to start a new session? (y/n): ")
         if confirm.lower() == "y":
@@ -466,6 +557,9 @@ while True: # Main menu loop
             time.sleep(2) 
                         
     elif choice == "6": # Reconnect camera
+        """
+        reconnects the camera. If the user chooses to reconnect the camera, the program will ask the user to confirm the reconnection.
+        """        
         print("Reconnecting camera...")
         confirm = input("Are you sure you want to reconnect the camera? (y/n): ")
         if confirm.lower() == "y":
@@ -478,6 +572,9 @@ while True: # Main menu loop
         wait_for_keypress()
             
     elif choice == "7": # Disconnect camera
+        """
+        asks the user to confirm the disconnection of the camera. If the user confirms the disconnection, the program will disconnect the camera.
+        """        
         confirm = input("Are you sure you want to disconnect the camera? (y/n): ")
         if confirm.lower() == "y":
             disconnect_camera()
@@ -488,16 +585,18 @@ while True: # Main menu loop
         wait_for_keypress()
     
     elif choice == "8": # Exit
+        """
+        exits the program. If the user chooses to exit the program, the program will ask the user to confirm the exit.
+        """    
         break
     else:
         print("\033[91mInvalid choice. Please try again.\033[0m")
         time.sleep(1) # Simulating delay before showing the menu again
  
 print("Exiting camera application.")
+"""
+if the selected_pictures.json file exists and the selected_pictures variable is empty, the program will delete the selected_pictures.json file.
+"""
 if os.path.exists(save_directory + '/selected_pictures.json'):
     if selected_pictures == 0 or selected_pictures is None or selected_pictures == [] or selected_pictures == "[]" or selected_pictures == "":
         os.remove(save_directory + '/selected_pictures.json')
-
-
-#TO DO:
-# Look on line 301

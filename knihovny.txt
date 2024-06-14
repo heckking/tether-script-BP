@@ -1,0 +1,4 @@
+gphoto2
+libgphoto2
+cv2
+rawpy

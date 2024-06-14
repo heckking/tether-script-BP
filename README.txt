@@ -1,10 +1,9 @@
 
-Run first the install_me.sh 
-It downloads and installs libgphoto2 library that is necessery.
+Run first the run_me.sh 
+It runs the program and installs necessery libraries
 
 If its not possible install manually.
 need to run main.py in sudo to access full functionality
-
 
 # main.py
 

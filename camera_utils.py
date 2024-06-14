@@ -11,6 +11,23 @@ import numpy as np
 import rawpy
 import gphoto2 as gp
 
+"""
+This module provides utility functions for interacting with cameras using the gphoto2 library.
+
+Libraries used:
+- subprocess: Provides a way to spawn new processes, connect to their input/output/error pipes, and obtain their return codes.
+- os: Provides a way to interact with the operating system, such as accessing environment variables and file operations.
+- time: Provides various time-related functions, such as getting the current time and delaying execution.
+- cv2: OpenCV library for image processing and computer vision tasks.
+- sys: Provides access to some variables used or maintained by the interpreter and to functions that interact with the interpreter.
+- shutil: Provides high-level file operations, such as copying and moving files.
+- re: Provides regular expression matching operations.
+- numpy: Library for numerical computing with Python.
+- rawpy: Library for reading RAW image files.
+- gphoto2: Python bindings for the gphoto2 library, which allows communication with digital cameras.
+
+"""
+
 def is_camera_connected(): # Check if a camera is connected
     """
     Checks if a camera is connected by running the 'gphoto2 --auto-detect' command.
@@ -21,7 +38,10 @@ def is_camera_connected(): # Check if a camera is connected
     except subprocess.CalledProcessError:
         return False
 
-def disconnect_camera(): # Disconnect the camera
+def disconnect_camera():
+    """
+    Disconnects the camera by running a series of gphoto2 commands.
+    """
     print("Disconnecting camera...")
     subprocess.run(["gphoto2", "--auto-detect"])
     subprocess.run(["gphoto2", "--port", "usb:", "--camera", "usb:", "--summary"])
@@ -78,6 +98,14 @@ def get_camera_info(info): # Get the camera information
         return None
 
 def get_connected_camera_serial_number(): # Get the serial number of the connected camera
+    """
+    Gets the serial number of the connected camera by running the 'gphoto2 --get-config serialnumber' command.
+
+    Raises:
+        Exception: If the serial number could not be found.
+    Returns:
+        The serial number of the connected camera if successful, otherwise returns None.
+    """    
     try:
         # Run the gphoto2 command to get the serial number
         result = subprocess.run(['gphoto2', '--get-config', 'serialnumber'], capture_output=True, text=True)
@@ -143,9 +171,20 @@ def get_camera_battery_level():
         print(f'Error getting battery level: {e}')
         return None
 
-def show_camera_info(camera_model, serial_number, firmware_version, battery_level, remaining_storage): # Show the camera information
+def show_camera_info(camera_model, serial_number, firmware_version, battery_level, remaining_storage):
     """
     Displays the information of the connected camera.
+
+    Parameters:
+    - camera_model (str): The model of the connected camera.
+    - serial_number (str): The serial number of the connected camera.
+    - firmware_version (str): The firmware version of the connected camera.
+    - battery_level (float): The battery level of the connected camera.
+    - remaining_storage (float): The remaining storage of the connected camera.
+
+    Returns:
+    None
+
     """
     try:
         print("\033[92mModel:", camera_model, "\033[0m")
@@ -175,7 +214,7 @@ def show_camera_info(camera_model, serial_number, firmware_version, battery_leve
         print("\033[92mBattery Level:", battery_level, "\033[0m")
     except KeyError as e:
         print("\033[91mError: Missing key", e, "in camera info.\033[0m")
-        
+
     try:
         print("\033[92mRemaining Storage:", remaining_storage, "\033[0m")
     except KeyError as e:
@@ -209,17 +248,37 @@ def get_camera_free_space():
         return None
 
 def get_camera_abilities():
+    """
+    Retrieves the abilities of the camera using the 'gphoto2 --abilities' command.
+
+    Returns:
+        str: The output of the 'gphoto2 --abilities' command.
+        
+    Raises:
+        CalledProcessError: If an error occurs while trying to get the camera abilities.
+    """    
     try:
         # Run the 'gphoto2 --abilities' command
         output = subprocess.check_output(['gphoto2', '--abilities']).decode()
         # Return the output of the command
         return output
     except subprocess.CalledProcessError:
-        return "An error occurred while trying to get the camera abilities."
+        raise subprocess.CalledProcessError("An error occurred while trying to get the camera abilities.")
 
-def list_available_usb_ports(): # List the available USB ports
+def list_available_usb_ports():
     """
     Lists the available USB ports.
+
+    This function uses system commands to retrieve information about the available USB ports.
+    On macOS, it uses the `system_profiler` command with the `SPUSBDataType` argument.
+    On other platforms, it uses the `lsusb` command.
+    
+    Returns:
+        A list of strings, where each string represents an available USB port.
+
+    Raises:
+        subprocess.CalledProcessError: If the system command fails to execute.
+
     """
     try:
         if sys.platform == 'darwin':
@@ -232,6 +291,15 @@ def list_available_usb_ports(): # List the available USB ports
         print("Failed to list available USB ports.")
 
 def wait_for_camera_connection():
+    """
+    Waits for a camera connection.
+
+    This function continuously checks for the presence of a camera by using the `autodetect` method from the `gp.Camera` class.
+    It waits until a camera is detected and then breaks out of the loop.
+
+    Returns:
+        None
+    """
     context = gp.Context()
     while True:
         cameras = gp.Camera.autodetect(context)
@@ -244,10 +312,18 @@ def wait_for_camera_connection():
 """
 These functions below capture and save a picture from the connected camera and then show it.
 """
-def save_tethered_picture(save_directory, filename): # Save a picture from the connected camera
+def save_tethered_picture(save_directory, filename):
     """
+    function is not used in the main program
+    
     Captures and saves a picture from the connected camera using the 'gphoto2 --capture-tethered' command.
-    Returns True if successful, otherwise returns False.
+    
+    Args:
+        save_directory (str): The directory where the picture will be saved.
+        filename (str): The name of the file to be saved. If None, a default name will be used.
+    
+    Returns:
+        bool: True if the picture was successfully captured and saved, False otherwise.
     """
     command = ['gphoto2', '--capture-tethered', '--filename', os.path.join(save_directory, f"%f.%C")]
 
@@ -265,43 +341,72 @@ def save_tethered_picture(save_directory, filename): # Save a picture from the c
     except subprocess.CalledProcessError:
         return False
 
-def capture_and_save_picture(save_directory, filename, camera_model): # Capture and save a picture
-        """
-        Captures and saves a picture from the connected camera into the chosen directory.
-        """
-        # Check if a camera is connected
-        if not is_camera_connected():
-            print("No camera connected.")
-            return
+def capture_and_save_picture(save_directory, filename, camera_model):
+    """
+    function is not used in the main program
+    
+    Captures and saves a picture from the connected camera into the chosen directory.
 
-        # Check if the save directory exists
-        if not os.path.exists(save_directory):
-            print("Save directory does not exist.")
-            return
+    Args:
+        save_directory (str): The directory where the picture will be saved.
+        filename (str): The name of the picture file. If not provided, the camera model will be used as the filename.
+        camera_model (str): The model of the connected camera.
 
-        # Check if the save directory is writable
-        if not os.access(save_directory, os.W_OK):
-            print("Save directory is not writable.")
-            return
+    Returns:
+        None
 
-        # Generate a unique file name for the captured picture
-        timestamp = time.strftime("%Y%m%d-%H%M%S")
-        if not filename:
-            filename = camera_model
-        file_extension = os.path.splitext(filename)[1]
-        file_name = f"{timestamp}{file_extension}"
-        save_path = os.path.join(save_directory, file_name)
+    Raises:
+        None
 
-        # Capture and save the picture
-        if save_tethered_picture(save_path, file_name, save_directory):
-            print("Picture captured and saved successfully.")
-        else:
-            print("Failed to capture and save the picture.")
+    """
+    # Check if a camera is connected
+    if not is_camera_connected():
+        print("No camera connected.")
+        return
+
+    # Check if the save directory exists
+    if not os.path.exists(save_directory):
+        print("Save directory does not exist.")
+        return
+
+    # Check if the save directory is writable
+    if not os.access(save_directory, os.W_OK):
+        print("Save directory is not writable.")
+        return
+
+    # Generate a unique file name for the captured picture
+    timestamp = time.strftime("%Y%m%d-%H%M%S")
+    if not filename:
+        filename = camera_model
+    file_extension = os.path.splitext(filename)[1]
+    file_name = f"{timestamp}{file_extension}"
+    save_path = os.path.join(save_directory, file_name)
+
+    # Capture and save the picture
+    if save_tethered_picture(save_path, file_name, save_directory):
+        print("Picture captured and saved successfully.")
+    else:
+        print("Failed to capture and save the picture.")
 
 def show_latest_picture(save_directory, selected_pictures): # Show the latest picture taken in window
     """
-    Shows the latest taken picture continuously with the given save directory.
-    It accepts all photo file types.
+    This function continuously displays the latest picture taken from the specified save directory. It accepts all photo file types.
+    The function starts by checking if there are any selected pictures provided. If there are, they are added to the `selected_photos` list.
+    The function then enters a loop where it continuously checks for new photo files in the save directory. It filters the file list to only include photo file types and sorts them by modification time in descending order.
+    If a new photo file is found, it checks if it is different from the previous newest image. If it is, it updates the `newest_image` variable and resets the index and tag_preview flags.
+    The function then checks the file type of the latest image. If it is a RAW image (e.g., .nef, .cr2, .arw), it uses the `rawpy` library to extract the embedded JPEG preview. If a JPEG preview is found, it decodes the JPEG data and displays the image. Otherwise, it postprocesses the RAW data and displays the image. If there is an error reading the RAW image, it prints an error message and waits for 2 seconds before continuing to the next image.
+    If the latest image is not a RAW image, it simply reads and displays the image using OpenCV.
+    If the latest image is in the `selected_photos` list, it adds a green border to the image. Otherwise, it adds a black border.
+    The function creates a named window called "Latest Picture Viewer" and sets it to fullscreen windowed mode. It then displays the image in the window.    
+    The function listens for keyboard events. Pressing the 'Esc' key closes the window and returns the `selected_photos` list if it is not empty. Pressing the 'a' key or left arrow key moves to the previous image. Pressing the 'd' key or right arrow key moves to the next image. Pressing the 'Space' key selects or deselects the current image and updates the `selected_photos` list accordingly.
+    If no photos are found in the specified directory, it prints a message and waits for 2 seconds before checking again.
+    
+    Args:
+        save_directory (str): The directory where the pictures are saved.
+        selected_pictures (list): A list of selected pictures.
+
+    Returns:
+        list or int: If the 'Esc' key is pressed, the function returns an empty list if no pictures are selected, otherwise it returns the list of selected pictures.
     
     functions used for photo capture and save:
     show_latest_picture <- capture_and_save_picture
@@ -433,6 +538,37 @@ def show_latest_picture(save_directory, selected_pictures): # Show the latest pi
 def copy_captured_pictures(session_directory, destination_directory, selected_pictures, trf_all): # Copy the captured pictures
     """
     Copies all captured pictures in the session directory to the desired destination directory.
+
+    This function takes the path to the session directory where the captured pictures are located,
+    the path to the destination directory where the pictures will be copied,
+    a list of selected pictures to be copied (if empty, all pictures will be copied),
+    and a flag indicating whether to copy all pictures or only selected pictures.
+
+    The function first checks if the session directory and the destination directory exist.
+    If either directory does not exist, an error message is printed and the function returns.
+
+    Next, the function gets the list of files in the session directory and filters the file list
+    based on the selected_pictures and trf_all parameters. If trf_all is True, all photo files in
+    the session directory are copied. If trf_all is False and selected_pictures is not empty, only
+    the selected pictures are copied. If trf_all is False and selected_pictures is empty, an error
+    message is printed and the function returns.
+
+    After filtering the file list, the function checks if there are any photo files to be copied.
+    If there are no photo files, an error message is printed and the function returns.
+
+    Finally, the function iterates over each photo file in the filtered list and copies it to the
+    destination directory. If the destination file already exists, the user is prompted to choose
+    whether to overwrite, rename, or skip the file. If the file is successfully copied, a success
+    message is printed. If an error occurs during the copying process, an error message is printed.
+
+    Args:
+        session_directory (str): The path to the session directory where the captured pictures are located.
+        destination_directory (str): The path to the destination directory where the pictures will be copied.
+        selected_pictures (list): A list of selected pictures to be copied. If empty, all pictures will be copied.
+        trf_all (bool): A flag indicating whether to copy all pictures or only selected pictures.
+
+    Returns:
+        None
     """
     num_errors = 0
     # Check if the session directory exists
@@ -464,9 +600,9 @@ def copy_captured_pictures(session_directory, destination_directory, selected_pi
         else:
             print("No selected pictures found.")
             return
-        
+
     clear_terminal()
-    
+
     if not photo_file_list: # Check if there are no photo files in the session directory
         print("No photo files found in the session directory.")
         return
@@ -489,7 +625,7 @@ def copy_captured_pictures(session_directory, destination_directory, selected_pi
                         n += 1
                         new_filename = os.path.splitext(photo_file)[0] + "_" + str(n) + os.path.splitext(photo_file)[1]
                         new_destination_path = os.path.join(destination_directory, new_filename)
-                        
+
                     shutil.copy2(source_path, new_destination_path)
                     print(f"\nSuccessfully renamed and copied {photo_file} to {new_destination_path}.\n")
                 else:
@@ -503,13 +639,27 @@ def copy_captured_pictures(session_directory, destination_directory, selected_pi
         except IOError as e:
             print(f"Failed to copy {photo_file}: {e}")
             num_errors += 1
-            
+
     if num_errors == 0:
         print("\nAll photo files copied successfully.")
     else:
         print(f"Failed to copy {num_errors} photo files.")
 
-def copy_confirm(save_directory, destination_directory, selected_pictures):
+def copy_confirm(save_directory, destination_directory, selected_pictures): # Copy the selected pictures
+    """
+    Prompt the user for transfer options and perform the selected picture transfer.
+
+    This function allows the user to choose between different transfer options and performs the selected picture transfer.
+    The function uses the `copy_captured_pictures` function to copy the pictures.
+
+    Args:
+        save_directory (str): The directory where the captured pictures are saved.
+        destination_directory (str): The directory where the selected pictures will be copied.
+        selected_pictures (list): A list of selected pictures to be copied.
+
+    Returns:
+        int: 0 if the transfer is cancelled.
+    """    
     while True: # Check if the transfer is not cancelled
         clear_terminal()
         print("1. Copy all captured pictures")
