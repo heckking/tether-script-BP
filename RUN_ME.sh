@@ -24,8 +24,8 @@ fi
 source "$(dirname "$0")/python_env/bin/activate"
 
 # Install the required Python packages if they are not already installed
-if ! python3 -m pip show -r knihovny.txt &> /dev/null; then
-    python3 -m pip install -r knihovny.txt
+if ! python3 -m pip show -r libraries.txt &> /dev/null; then
+    python3 -m pip install -r libraries.txt
 fi
 # Run the program with sudo
 sudo python3 main.py
