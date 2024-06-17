@@ -35,8 +35,10 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
 	1. Start Capture
 		Warning: „Save folder not setup“ -> bude se ukazovat přímo z kamery
 		Warning „Low on storage“ -> bude pokud disk, kde jsou uložený je méně než 5 GB
-		1.1. Setup a save folder
-		1.2. Go back
+		1.1. Capture
+        1.2. Change the save folder
+        1.3. View pictures
+		1.4. Go back
 
 	2. Save Folder settings
 		2.1. Open save folder
@@ -46,7 +48,7 @@ Save Folder: „usr/pictures“ (None) / xx.xxMB left
 
 	3. Transfer all captured pictures in this session
 
-	4. Camera info
+	4. Camera info (Work in progress)
 		4.1. My Camera info
 		4.2. All Supported Cameras
 		4.3  Go Back

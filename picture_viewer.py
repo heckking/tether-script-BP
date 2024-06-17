@@ -22,5 +22,3 @@ if selected_pictures == 0:
 # Save the file names to a JSON file
 with open(save_directory + '/selected_pictures.json', 'w') as f:
     json.dump(selected_pictures, f)
-    
-    

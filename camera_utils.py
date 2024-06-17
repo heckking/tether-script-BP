@@ -534,12 +534,10 @@ def show_latest_picture(save_directory, selected_pictures): # Show the latest pi
                 prev_image = None
                 if selected_photo in selected_photos:
                     selected_photos.remove(selected_photo)
-                    #border_applied.remove(selected_photo)
                     tag_preview = False
                 else:
                     # Add the selected photo to the list
                     selected_photos.append(selected_photo)
-                    #border_applied.remove(selected_photo)
                     tag_preview = False
         else:
             print("No photos found in the specified directory.")
