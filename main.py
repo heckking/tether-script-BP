@@ -233,7 +233,7 @@ while True: # Main menu loop
                 print("Starting capturing picture...")
                 time.sleep(1)  # Simulating delay before capturing picture
                 clear_terminal()
-                print('Press Esc key to exit the viewer.\nUse "A" and "D" keys to navigate the pictures.\n\nPress (A) key to go back.\nPress (D) key to go forward.\n\nPress spacebar to select and deselect the picture.\n')
+                print('Press Esc key to exit the viewer.\nUse "A" and "D" keys to navigate the pictures.\n\nPress (A) key to go forward.\nPress (D) key to go back.\n\nPress spacebar to select and deselect the picture.\n')
                 wait_for_keypress()
                 time.sleep(1)
                 
@@ -318,28 +318,7 @@ while True: # Main menu loop
                 
                 """
                 save_directory, selected_pictures = change_save_directory(save_directory, selected_pictures)
-                                
-                """
-                choice_folder = input("Do you want to change the save folder? (y/n): ")
-                if choice_folder.lower() == "y":
-                    new_save_directory = choose_save_directory()
-                    try:
-                        if new_save_directory: # Check if a new save directory is chosen
-                            save_directory = new_save_directory
-                            print("Save directory: \033[94m{}\033[0m".format(save_directory))
-                            print("Remaining storage:", calculate_mb_left(save_directory))
-                        else:
-                            print("Save directory remains: \033[94m{}\033[0m".format(save_directory))
-                            print("Remaining storage:", calculate_mb_left(save_directory))
-                        wait_for_keypress()
-                    except:
-                        print("Invalid save directory. Please choose a valid save directory.")
-                        time.sleep(1)
-                else:
-                    print("Save directory remains: \033[94m{}\033[0m".format(save_directory))
-                    print("Remaining storage:", calculate_mb_left(save_directory))
-                    wait_for_keypress()
-                """                      
+                    
             elif choice == "3": # View pictures
                 """
                 this part of the code allows the user to view the pictures taken during the session. 
