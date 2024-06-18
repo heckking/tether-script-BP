@@ -583,34 +583,35 @@ def copy_captured_pictures(session_directory, destination_directory, selected_pi
     if not os.path.exists(session_directory):
         print("Session directory does not exist.")
         return
-
+    
     # Check if the destination directory exists
     if not os.path.exists(destination_directory):
         print("Destination directory does not exist.")
         return
-
+    
     # Get the list of files in the session directory
     file_list = os.listdir(session_directory)
-
+    
     # Filter the file list based on selected_pictures
     # Ask the user if they want to copy only selected pictures or all pictures
     clear_terminal()
-    print("file list:", file_list)
-    print("selected_pictures: ", selected_pictures)
-
+    
     if trf_all == True:
         # Copy all photo files
         photo_file_list = [file for file in file_list if file.lower().endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png', '.tif', '.tiff'))]
+        if not photo_file_list:
+            print("No photo files found in the session directory.")
+            return
     else:
         if selected_pictures:
             # Copy only selected pictures
-            photo_file_list = [file for file in selected_pictures if file.lower().endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png', '.tif', '.tiff'))]
+            photo_file_list = [os.path.basename(file) for file in selected_pictures if file.lower().endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png', '.tif', '.tiff'))]
         else:
             print("No selected pictures found.")
             return
-
+    
     clear_terminal()
-
+    
     if not photo_file_list: # Check if there are no photo files in the session directory
         print("No photo files found in the session directory.")
         return
@@ -633,7 +634,7 @@ def copy_captured_pictures(session_directory, destination_directory, selected_pi
                         n += 1
                         new_filename = os.path.splitext(photo_file)[0] + "_" + str(n) + os.path.splitext(photo_file)[1]
                         new_destination_path = os.path.join(destination_directory, new_filename)
-
+    
                     shutil.copy2(source_path, new_destination_path)
                     print(f"\nSuccessfully renamed and copied {photo_file} to {new_destination_path}.\n")
                 else:
@@ -649,9 +650,10 @@ def copy_captured_pictures(session_directory, destination_directory, selected_pi
             num_errors += 1
 
     if num_errors == 0:
-        print("\nAll photo files copied successfully.")
+        print("\033[92mAll photo files copied successfully.\033[0m")
     else:
-        print(f"Failed to copy {num_errors} photo files.")
+        print(f"Failed to copy \033[91m{num_errors}\033[0m photo files.")
+    time.sleep(2)
 
 def copy_confirm(save_directory, destination_directory, selected_pictures): # Copy the selected pictures
     """
@@ -670,6 +672,8 @@ def copy_confirm(save_directory, destination_directory, selected_pictures): # Co
     """    
     while True: # Check if the transfer is not cancelled
         clear_terminal()
+        print("\033[94mSource directory:\033[0m", save_directory)
+        print("\033[94mDestination directory:\033[0m", destination_directory)
         print("1. Copy all captured pictures")
         print("2. Copy all selected pictures")
         print("3. Show list of selected pictures")

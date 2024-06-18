@@ -288,14 +288,17 @@ while True: # Main menu loop
                         if not destination_directory:  # Check if a destination directory is chosen
                             clear_terminal()
                             print("No destination directory chosen. Transfer cancelled.")
+                            time.sleep(1)
                             break
                         elif not save_directory:  # Check if a save directory is chosen
                             clear_terminal()
                             print("No save directory chosen. Transfer cancelled.")
+                            time.sleep(1)
                             break
                         elif save_directory == destination_directory:  # Check if the save and destination directories are the same
                             print("Save and destination directories are the same.")
-                            print("Please choose a different destination directory.")
+                            print("Please choose a different destination directory.\n Transfer cancelled.")
+                            time.sleep(1)
                             break
                         else:
                             copy_confirm(save_directory, destination_directory, selected_pictures)
