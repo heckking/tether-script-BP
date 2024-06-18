@@ -598,7 +598,7 @@ def copy_captured_pictures(session_directory, destination_directory, selected_pi
     print("file list:", file_list)
     print("selected_pictures: ", selected_pictures)
 
-    if trf_all:
+    if trf_all == True:
         # Copy all photo files
         photo_file_list = [file for file in file_list if file.lower().endswith(('.nef', '.cr2', '.arw', '.jpg', '.jpeg', '.png', '.tif', '.tiff'))]
     else:

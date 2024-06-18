@@ -255,7 +255,7 @@ while True: # Main menu loop
                 p2 = subprocess.Popen(command)
 
                 """
-                p2 is being terminated after p1 is done.
+                p2 is being terminated after p1 is done running.
                 """                
                 p1.wait()
                 p2.terminate()
