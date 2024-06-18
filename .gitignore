@@ -15,4 +15,4 @@ python_env
 .DS_Store
 __pycache__/app_utils.cpython-312.pyc
 __pycache__/camera_utils.cpython-312.pyc
---pycache--
+__pycache__
