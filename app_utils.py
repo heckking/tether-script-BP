@@ -54,13 +54,7 @@ def calculate_mb_left(directory):
         else:
             return f"\033[38;5;196m{mb_left:.2f} MiB left\033[0m"  # Red color
 
-def wait_for_keypress(): # Wait for a key press to continue
-    
-    """
-    print("Press any key to continue...")
-    while not keyboard.is_pressed():  # if key is pressed 
-        time.sleep(0.1)  # wait for 0.1 seconds    
-    """    
+def wait_for_keypress(): # Wait for a key press to continue  
     input("\033[38;5;226mPress Enter to continue...\033[0m") # Yellow color
 
 def clear_terminal(): # Clear the text from the terminal
