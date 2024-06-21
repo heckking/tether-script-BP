@@ -464,10 +464,6 @@ def show_latest_picture(save_directory, selected_pictures): # Show the latest pi
                 latest_image = latest_file_path
                 print("Latest image path:", latest_image)
                 
-            """
-            if latest_file_path != latest_image:
-                latest_image = latest_file_path
-            """    
             if tag_preview:
                 pass
             else:
@@ -539,9 +535,9 @@ def show_latest_picture(save_directory, selected_pictures): # Show the latest pi
                     # Add the selected photo to the list
                     selected_photos.append(selected_photo)
                     tag_preview = False
-        else:
-            print("No photos found in the specified directory.")
-            time.sleep(2)
+            else:
+                print("No photos found in the specified directory.")
+                time.sleep(2)
 
 def copy_captured_pictures(session_directory, destination_directory, selected_pictures, trf_all): # Copy the captured pictures
     """
@@ -592,8 +588,6 @@ def copy_captured_pictures(session_directory, destination_directory, selected_pi
     # Get the list of files in the session directory
     file_list = os.listdir(session_directory)
     
-    # Filter the file list based on selected_pictures
-    # Ask the user if they want to copy only selected pictures or all pictures
     clear_terminal()
     
     if trf_all == True:
