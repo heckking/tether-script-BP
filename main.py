@@ -532,13 +532,13 @@ while True: # Main menu loop
 
             selected_pictures = []
             cameras = []
-            save_directory = None
             destination_directory = None
             camera = {}
             new_session_check = True
             if os.path.exists(save_directory + '/selected_pictures.json'):
                 os.remove(save_directory + '/selected_pictures.json')
                 print("selected_pictures.json file deleted.")
+            save_directory = None
 
             time.sleep(2)  # Simulating delay before showing the main menu
             wait_for_keypress()
